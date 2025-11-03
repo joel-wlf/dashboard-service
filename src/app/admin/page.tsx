@@ -1,3 +1,340 @@
-export default async function Page() {
-    return <>Admin</>
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+
+interface Setting {
+  _id: string;
+  _rev: string;
+  key: string;
+  value: any;
+}
+
+export default function AdminPage() {
+  // Zustandsvariablen für die Admin-Seite
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [settings, setSettings] = useState<Setting[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [updateMessage, setUpdateMessage] = useState("");
+  const [sessionTimeoutWarning, setSessionTimeoutWarning] = useState(false);
+  const [sessionTimeLeft, setSessionTimeLeft] = useState(0);
+  const router = useRouter();
+
+  // Authentifizierungsstatus beim Laden der Komponente prüfen
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
+
+  // Einstellungen laden wenn authentifiziert
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadSettings();
+      startSessionMonitoring();
+    }
+  }, [isAuthenticated]);
+
+  // Session Monitoring für automatische Warnung vor Ablauf
+  const startSessionMonitoring = () => {
+    // Timer für Session Timeout Warnung (25 Tage = 5 Tage vor Ablauf)
+    const warningTime = 25 * 24 * 60 * 60 * 1000; // 25 Tage in Millisekunden
+    
+    setTimeout(() => {
+      setSessionTimeoutWarning(true);
+      setSessionTimeLeft(5 * 24 * 60 * 60); // 5 Tage verbleibend
+      
+      // Countdown Timer
+      const countdown = setInterval(() => {
+        setSessionTimeLeft(prev => {
+          if (prev <= 0) {
+            clearInterval(countdown);
+            handleLogout(); // Automatisches Logout
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }, warningTime);
+  };
+
+  const checkAuthStatus = async () => {
+    try {
+      const response = await fetch("/api/auth");
+      const data = await response.json();
+      setIsAuthenticated(data.authenticated);
+    } catch (error) {
+      setIsAuthenticated(false);
+    }
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setLoginError("");
+
+    try {
+      const response = await fetch("/api/auth", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setIsAuthenticated(true);
+        setPassword("");
+      } else {
+        // Deutsche Fehlermeldungen basierend auf Server Response
+        if (response.status === 429) {
+          setLoginError("Zu viele Versuche. Bitte warten Sie 15 Minuten.");
+        } else {
+          setLoginError("Ungültiges Passwort");
+        }
+      }
+    } catch (error) {
+      setLoginError("Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth", { method: "DELETE" });
+      setIsAuthenticated(false);
+      setSettings([]);
+      setSessionTimeoutWarning(false);
+    } catch (error) {
+      console.error("Abmeldung fehlgeschlagen:", error);
+    }
+  };
+
+  const loadSettings = async () => {
+    try {
+      const response = await fetch("/api/getSettings");
+      if (response.ok) {
+        const data = await response.json();
+        setSettings(data);
+      } else if (response.status === 401) {
+        // Session abgelaufen
+        setIsAuthenticated(false);
+      }
+    } catch (error) {
+      console.error("Fehler beim Laden der Einstellungen:", error);
+    }
+  };
+
+  const updateSetting = async (key: string, value: any) => {
+    setLoading(true);
+    setUpdateMessage("");
+
+    try {
+      const response = await fetch("/api/updateSetting", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ key, value }),
+      });
+
+      if (response.ok) {
+        setUpdateMessage(`Einstellung "${key}" erfolgreich aktualisiert`);
+        await loadSettings(); // Einstellungen neu laden
+        setTimeout(() => setUpdateMessage(""), 3000);
+      } else if (response.status === 401) {
+        // Session abgelaufen
+        setIsAuthenticated(false);
+      } else {
+        const error = await response.json();
+        setUpdateMessage(`Fehler beim Aktualisieren von "${key}": ${error.error}`);
+      }
+    } catch (error) {
+      setUpdateMessage(`Fehler beim Aktualisieren von "${key}": ${error}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSettingChange = (key: string, value: any) => {
+    // Lokalen Zustand sofort aktualisieren für bessere UX
+    setSettings(prev => 
+      prev.map(setting => 
+        setting.key === key ? { ...setting, value } : setting
+      )
+    );
+    
+    // Dann Datenbank aktualisieren
+    updateSetting(key, value);
+  };
+
+  const formatTimeLeft = (seconds: number): string => {
+    const days = Math.floor(seconds / (24 * 60 * 60));
+    const hours = Math.floor((seconds % (24 * 60 * 60)) / (60 * 60));
+    const minutes = Math.floor((seconds % (60 * 60)) / 60);
+    
+    if (days > 0) return `${days} Tag(e) ${hours} Stunde(n)`;
+    if (hours > 0) return `${hours} Stunde(n) ${minutes} Minute(n)`;
+    return `${minutes} Minute(n)`;
+  };
+
+  // Ladebildschirm während Authentifizierungsprüfung
+  if (isAuthenticated === null) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-xl">Wird geladen...</div>
+      </div>
+    );
+  }
+
+  // Anmeldeformular anzeigen wenn nicht authentifiziert
+  if (!isAuthenticated) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-100">
+        <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-md">
+          <h1 className="text-2xl font-bold text-center mb-6">Admin Anmeldung</h1>
+          <form onSubmit={handleLogin}>
+            <div className="mb-4">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                Passwort
+              </label>
+              <input
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+                placeholder="Admin-Passwort eingeben"
+              />
+            </div>
+            {loginError && (
+              <div className="mb-4 text-red-600 text-sm bg-red-50 p-3 rounded-md">
+                {loginError}
+              </div>
+            )}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 disabled:opacity-50 transition-colors"
+            >
+              {loading ? "Wird angemeldet..." : "Anmelden"}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  // Admin Dashboard anzeigen wenn authentifiziert
+  return (
+    <div className="min-h-screen bg-gray-100 p-8">
+      <div className="max-w-4xl mx-auto">
+        {/* Session Timeout Warnung */}
+        {sessionTimeoutWarning && (
+          <div className="mb-4 p-4 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-md">
+            <div className="flex justify-between items-center">
+              <div>
+                <strong>⚠️ Session läuft bald ab</strong>
+                <p className="text-sm">
+                  Ihre Sitzung endet in {formatTimeLeft(sessionTimeLeft)}. 
+                  Bitte melden Sie sich erneut an, um fortzufahren.
+                </p>
+              </div>
+              <button
+                onClick={() => setSessionTimeoutWarning(false)}
+                className="text-yellow-600 hover:text-yellow-800"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
+          <button
+            onClick={handleLogout}
+            className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors"
+          >
+            Abmelden
+          </button>
+        </div>
+
+        {updateMessage && (
+          <div className={`mb-4 p-3 rounded-md transition-all ${
+            updateMessage.includes("erfolgreich") 
+              ? "bg-green-100 text-green-700 border border-green-300" 
+              : "bg-red-100 text-red-700 border border-red-300"
+          }`}>
+            {updateMessage}
+          </div>
+        )}
+
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-semibold mb-6 text-gray-800">Dashboard Einstellungen</h2>
+          
+          {settings.length === 0 ? (
+            <div className="text-gray-500 text-center py-8">
+              Keine Einstellungen gefunden
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {settings.map((setting) => (
+                <div key={setting._id} className="border-b border-gray-200 pb-4 last:border-b-0">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {setting.key.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
+                  </label>
+                  
+                  {/* Boolean Einstellungen */}
+                  {typeof setting.value === "boolean" && (
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={setting.value}
+                        onChange={(e) => handleSettingChange(setting.key, e.target.checked)}
+                        className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <span className="text-sm text-gray-600">
+                        {setting.value ? "Aktiviert" : "Deaktiviert"}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {/* String Einstellungen */}
+                  {typeof setting.value === "string" && (
+                    <input
+                      type="text"
+                      value={setting.value}
+                      onChange={(e) => handleSettingChange(setting.key, e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Wert eingeben..."
+                    />
+                  )}
+                  
+                  {/* Nummer Einstellungen */}
+                  {typeof setting.value === "number" && (
+                    <input
+                      type="number"
+                      value={setting.value}
+                      onChange={(e) => handleSettingChange(setting.key, parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Zahlenwert eingeben..."
+                    />
+                  )}
+                  
+                  <div className="mt-1 text-xs text-gray-500">
+                    Schlüssel: {setting.key}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 } 
