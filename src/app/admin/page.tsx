@@ -18,9 +18,6 @@ export default function AdminPage() {
   const [settings, setSettings] = useState<Setting[]>([]);
   const [loading, setLoading] = useState(false);
   const [updateMessage, setUpdateMessage] = useState("");
-  const [sessionTimeoutWarning, setSessionTimeoutWarning] = useState(false);
-  const [sessionTimeLeft, setSessionTimeLeft] = useState(0);
-  const router = useRouter();
 
   // Authentifizierungsstatus beim Laden der Komponente prüfen
   useEffect(() => {
@@ -31,32 +28,8 @@ export default function AdminPage() {
   useEffect(() => {
     if (isAuthenticated) {
       loadSettings();
-      startSessionMonitoring();
     }
   }, [isAuthenticated]);
-
-  // Session Monitoring für automatische Warnung vor Ablauf
-  const startSessionMonitoring = () => {
-    // Timer für Session Timeout Warnung (25 Tage = 5 Tage vor Ablauf)
-    const warningTime = 25 * 24 * 60 * 60 * 1000; // 25 Tage in Millisekunden
-    
-    setTimeout(() => {
-      setSessionTimeoutWarning(true);
-      setSessionTimeLeft(5 * 24 * 60 * 60); // 5 Tage verbleibend
-      
-      // Countdown Timer
-      const countdown = setInterval(() => {
-        setSessionTimeLeft(prev => {
-          if (prev <= 0) {
-            clearInterval(countdown);
-            handleLogout(); // Automatisches Logout
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }, warningTime);
-  };
 
   const checkAuthStatus = async () => {
     try {
@@ -107,7 +80,6 @@ export default function AdminPage() {
       await fetch("/api/auth", { method: "DELETE" });
       setIsAuthenticated(false);
       setSettings([]);
-      setSessionTimeoutWarning(false);
     } catch (error) {
       console.error("Abmeldung fehlgeschlagen:", error);
     }
@@ -171,25 +143,6 @@ export default function AdminPage() {
     updateSetting(key, value);
   };
 
-  const formatTimeLeft = (seconds: number): string => {
-    const days = Math.floor(seconds / (24 * 60 * 60));
-    const hours = Math.floor((seconds % (24 * 60 * 60)) / (60 * 60));
-    const minutes = Math.floor((seconds % (60 * 60)) / 60);
-    
-    if (days > 0) return `${days} Tag(e) ${hours} Stunde(n)`;
-    if (hours > 0) return `${hours} Stunde(n) ${minutes} Minute(n)`;
-    return `${minutes} Minute(n)`;
-  };
-
-  // Ladebildschirm während Authentifizierungsprüfung
-  if (isAuthenticated === null) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="text-xl">Wird geladen...</div>
-      </div>
-    );
-  }
-
   // Anmeldeformular anzeigen wenn nicht authentifiziert
   if (!isAuthenticated) {
     return (
@@ -233,27 +186,7 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-4xl mx-auto">
-        {/* Session Timeout Warnung */}
-        {sessionTimeoutWarning && (
-          <div className="mb-4 p-4 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-md">
-            <div className="flex justify-between items-center">
-              <div>
-                <strong>⚠️ Session läuft bald ab</strong>
-                <p className="text-sm">
-                  Ihre Sitzung endet in {formatTimeLeft(sessionTimeLeft)}. 
-                  Bitte melden Sie sich erneut an, um fortzufahren.
-                </p>
-              </div>
-              <button
-                onClick={() => setSessionTimeoutWarning(false)}
-                className="text-yellow-600 hover:text-yellow-800"
-              >
-                ✕
-              </button>
-            </div>
-          </div>
-        )}
-
+      
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
           <button

@@ -1,3 +1,4 @@
+import { getClient } from "@/lib/mqtt";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -56,6 +57,18 @@ export async function POST(req: Request) {
       body: JSON.stringify(updatedDoc),
     }
   );
+
+  // Frontend zum neu laden aufgefordert über MQTT
+  const mqttClient = getClient();
+
+  if (mqttClient) {
+    mqttClient.publish("commands", "reload", {}, (err) => {
+      if (err) console.error("MQTT publish error:", err);
+      else console.log("MQTT reload command sent");
+    });
+  } else {
+    console.log("MQTT client not available - skipping reload command");
+  }
 
   if (!updateRes.ok) {
     return NextResponse.json(
