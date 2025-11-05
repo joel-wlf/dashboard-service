@@ -45,6 +45,7 @@ export default function Home() {
   const zipCode = settings.find((s) => s.key === "zip_code")?.value;
   const zoomLevel = settings.find((s) => s.key === "zoom_level")?.value || 100;
   const lessonData = settings.find((s) => s.key === "lesson_data")?.value || [];
+  const showOvertimeAlarm = settings.find((s) => s.key === "show_overtime_alarm")?.value ?? true;
 
   console.log(settings);
 
@@ -62,7 +63,7 @@ export default function Home() {
       >
         <div className='col-span-3 flex flex-col'>
           <div className='h-[10%]'>
-            <LessonProgressBar lessonData={lessonData} currentTime={time} />
+            <LessonProgressBar lessonData={lessonData} currentTime={time} showOvertimeAlarm={showOvertimeAlarm} />
           </div>
           <div className='h-[90%] border-y flex flex-col justify-center items-center'>
             {showClock && (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface LessonPeriod {
   type: "stunde" | "pause";
@@ -15,6 +15,11 @@ interface LessonDataEditorProps {
 
 export default function LessonDataEditor({ value, onChange }: LessonDataEditorProps) {
   const [lessonData, setLessonData] = useState<LessonPeriod[]>(value || []);
+
+  // Synchronize local state when props change
+  useEffect(() => {
+    setLessonData(value || []);
+  }, [value]);
 
   const handlePeriodChange = (index: number, field: keyof LessonPeriod, newValue: string) => {
     const updatedData = [...lessonData];

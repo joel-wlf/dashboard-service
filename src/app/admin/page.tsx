@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import LessonDataEditor from "@/components/LessonDataEditor";
+import SettingsEditor from "@/components/SettingsEditor";
 
 interface Setting {
   _id: string;
@@ -208,109 +208,12 @@ export default function AdminPage() {
           </div>
         )}
 
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-6 text-gray-800">Dashboard Einstellungen</h2>
-          
-          {settings.length === 0 ? (
-            <div className="text-gray-500 text-center py-8">
-              Keine Einstellungen gefunden
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {settings.map((setting) => (
-                <div key={setting._id} className="border-b border-gray-200 pb-4 last:border-b-0">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {setting.key.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
-                  </label>
-                  
-                  {/* Boolean Einstellungen */}
-                  {typeof setting.value === "boolean" && (
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={setting.value}
-                        onChange={(e) => handleSettingChange(setting.key, e.target.checked)}
-                        className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <span className="text-sm text-gray-600">
-                        {setting.value ? "Aktiviert" : "Deaktiviert"}
-                      </span>
-                    </div>
-                  )}
-                  
-                  {/* String Einstellungen */}
-                  {typeof setting.value === "string" && (
-                    <input
-                      type="text"
-                      value={setting.value}
-                      onChange={(e) => handleSettingChange(setting.key, e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Wert eingeben..."
-                    />
-                  )}
-                  
-                  {/* Nummer Einstellungen */}
-                  {typeof setting.value === "number" && (
-                    <input
-                      type="number"
-                      value={setting.value}
-                      onChange={(e) => handleSettingChange(setting.key, parseFloat(e.target.value) || 0)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Zahlenwert eingeben..."
-                    />
-                  )}
-
-                  {/* Lesson Data Editor */}
-                  {setting.key === "lesson_data" && Array.isArray(setting.value) && (
-                    <LessonDataEditor
-                      value={setting.value}
-                      onChange={(newData) => handleSettingChange(setting.key, newData)}
-                    />
-                  )}
-
-                  {/* Array Einstellungen (außer lesson_data) */}
-                  {Array.isArray(setting.value) && setting.key !== "lesson_data" && (
-                    <textarea
-                      value={JSON.stringify(setting.value, null, 2)}
-                      onChange={(e) => {
-                        try {
-                          const parsed = JSON.parse(e.target.value);
-                          handleSettingChange(setting.key, parsed);
-                        } catch (error) {
-                          // Invalid JSON, don't update
-                        }
-                      }}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
-                      rows={6}
-                      placeholder="JSON Array eingeben..."
-                    />
-                  )}
-
-                  {/* Object Einstellungen */}
-                  {typeof setting.value === "object" && !Array.isArray(setting.value) && setting.value !== null && (
-                    <textarea
-                      value={JSON.stringify(setting.value, null, 2)}
-                      onChange={(e) => {
-                        try {
-                          const parsed = JSON.parse(e.target.value);
-                          handleSettingChange(setting.key, parsed);
-                        } catch (error) {
-                          // Invalid JSON, don't update
-                        }
-                      }}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
-                      rows={6}
-                      placeholder="JSON Object eingeben..."
-                    />
-                  )}
-                  
-                  <div className="mt-1 text-xs text-gray-500">
-                    Schlüssel: {setting.key}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+        <div>
+          <h2 className="text-2xl font-bold mb-6 text-gray-800">Dashboard Einstellungen</h2>
+          <SettingsEditor 
+            settings={settings} 
+            onSettingChange={handleSettingChange}
+          />
         </div>
       </div>
     </div>

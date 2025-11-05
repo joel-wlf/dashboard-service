@@ -25,3 +25,15 @@ body {
   height: 100vh;
   position: relative;
 }
+
+@keyframes flashRedWhite {
+  0% {
+    background-color: rgb(220, 38, 38); /* red-600 */
+  }
+  50% {
+    background-color: rgb(255, 255, 255); /* white */
+  }
+  100% {
+    background-color: rgb(220, 38, 38); /* red-600 */
+  }
+}
