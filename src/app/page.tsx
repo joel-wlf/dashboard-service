@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import TrainDepartures from "@/components/TrainDepartures";
+import WeatherWidget from "@/components/WeatherWidget";
 
 export default function Home() {
   const [time, setTime] = useState(new Date());
   const [settings, setSettings] = useState<any[]>([]);
-  const [affirmation, setAffirmation] = useState<string>("");
 
   // Fetch settings from your API route
   const fetchSettings = async () => {
@@ -40,39 +41,30 @@ export default function Home() {
     (s) => s.key === "show_affirmation"
   )?.value;
   const showWeather = settings.find((s) => s.key === "show_weather")?.value;
-  const weatherLocation = settings.find(
-    (s) => s.key === "weather_location"
-  )?.value;
-
-  useEffect(() => {
-    
-    setInterval(() => {
-      if (showAffirmation) {
-        fetch("https://www.affirmations.dev/")
-          .then((res) => res.json())
-          .then((data) => {
-            setAffirmation(data.affirmation.toString());
-          });
-      }
-    }, 1000 * 60 * 60); // Update affirmation every hour
-  }, []);
+  const zipCode = settings.find((s) => s.key === "zip_code")?.value;
 
   console.log(settings);
 
   return (
-    <main className='h-screen max-h-screen grid grid-cols-3 grid-rows-2 '>
-      <div className='col-span-3 flex flex-col'>
-        <div className='h-[10%] bg-red-500'></div>
-        <div className='h-[90%] flex flex-col justify-center items-center'>
-          {showClock && (
-            <p className='text-[128px]'>{time.toLocaleTimeString("de")}</p>
-          )}
-          {showAffirmation && <p className='text-2xl'>{affirmation}</p>}
+      <div className="screensaver-container">
+
+      <main className='h-screen max-h-screen grid grid-cols-3 grid-rows-2 '>
+        <div className='col-span-3 flex flex-col'>
+          <div className='h-[10%]'></div>
+          <div className='h-[90%] border-y flex flex-col justify-center items-center'>
+            {showClock && (
+              <p className='text-[128px]'>{time.toLocaleTimeString("de")}</p>
+            )}
+          </div>
         </div>
-      </div>
-      <div className=' bg-blue-500'></div>
-      <div className=' bg-green-500'></div>
-      <div className=' bg-pink-500'></div>
-    </main>
+        <div className=''>
+          {showWeather && zipCode && <WeatherWidget zipCode={zipCode} />}
+        </div>
+        <div className='border-x p-4 overflow-hidden'>
+          <TrainDepartures />
+        </div>
+        <div className=''></div>
+      </main>
+    </div>
   );
 }
