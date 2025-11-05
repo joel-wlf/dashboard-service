@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import LessonDataEditor from "@/components/LessonDataEditor";
 
 interface Setting {
   _id: string;
@@ -256,6 +257,50 @@ export default function AdminPage() {
                       onChange={(e) => handleSettingChange(setting.key, parseFloat(e.target.value) || 0)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="Zahlenwert eingeben..."
+                    />
+                  )}
+
+                  {/* Lesson Data Editor */}
+                  {setting.key === "lesson_data" && Array.isArray(setting.value) && (
+                    <LessonDataEditor
+                      value={setting.value}
+                      onChange={(newData) => handleSettingChange(setting.key, newData)}
+                    />
+                  )}
+
+                  {/* Array Einstellungen (außer lesson_data) */}
+                  {Array.isArray(setting.value) && setting.key !== "lesson_data" && (
+                    <textarea
+                      value={JSON.stringify(setting.value, null, 2)}
+                      onChange={(e) => {
+                        try {
+                          const parsed = JSON.parse(e.target.value);
+                          handleSettingChange(setting.key, parsed);
+                        } catch (error) {
+                          // Invalid JSON, don't update
+                        }
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                      rows={6}
+                      placeholder="JSON Array eingeben..."
+                    />
+                  )}
+
+                  {/* Object Einstellungen */}
+                  {typeof setting.value === "object" && !Array.isArray(setting.value) && setting.value !== null && (
+                    <textarea
+                      value={JSON.stringify(setting.value, null, 2)}
+                      onChange={(e) => {
+                        try {
+                          const parsed = JSON.parse(e.target.value);
+                          handleSettingChange(setting.key, parsed);
+                        } catch (error) {
+                          // Invalid JSON, don't update
+                        }
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                      rows={6}
+                      placeholder="JSON Object eingeben..."
                     />
                   )}
                   

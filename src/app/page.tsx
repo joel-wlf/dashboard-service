@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import TrainDepartures from "@/components/TrainDepartures";
 import WeatherWidget from "@/components/WeatherWidget";
+import LessonProgressBar from "@/components/LessonProgressBar";
 
 export default function Home() {
   const [time, setTime] = useState(new Date());
@@ -43,6 +44,7 @@ export default function Home() {
   const showWeather = settings.find((s) => s.key === "show_weather")?.value;
   const zipCode = settings.find((s) => s.key === "zip_code")?.value;
   const zoomLevel = settings.find((s) => s.key === "zoom_level")?.value || 100;
+  const lessonData = settings.find((s) => s.key === "lesson_data")?.value || [];
 
   console.log(settings);
 
@@ -59,7 +61,9 @@ export default function Home() {
         }}
       >
         <div className='col-span-3 flex flex-col'>
-          <div className='h-[10%]'></div>
+          <div className='h-[10%]'>
+            <LessonProgressBar lessonData={lessonData} currentTime={time} />
+          </div>
           <div className='h-[90%] border-y flex flex-col justify-center items-center'>
             {showClock && (
               <p className='text-[128px]'>{time.toLocaleTimeString("de")}</p>
