@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import mqtt from "mqtt";
 
 export default function Home() {
   const [time, setTime] = useState(new Date());
   const [settings, setSettings] = useState<any[]>([]);
-  const [mqttMessage, setMqttMessage] = useState<string>("");
+  const [affirmation, setAffirmation] = useState<string>("");
 
   // Fetch settings from your API route
   const fetchSettings = async () => {
@@ -20,43 +19,18 @@ export default function Home() {
   };
 
   useEffect(() => {
-    // Connect to broker via WebSocket (broker must support it!)
-    const client = mqtt.connect(process.env.NEXT_PUBLIC_MQTT_BROKER_URL, {
-      username: process.env.NEXT_PUBLIC_MQTT_USERNAME,
-      password: process.env.NEXT_PUBLIC_MQTT_PASSWORD,
-    });
-
-    client.on("connect", () => {
-      console.log("Connected to MQTT broker");
-      client.subscribe("commands", (err) => {
-        if (!err) console.log("Subscribed to commands");
-      });
-    });
-
-    client.on("message", (topic, payload) => {
-      const msg = payload.toString();
-      console.log("MQTT message:", msg);
-      setMqttMessage(msg);
-    });
-
-    client.on("error", (err) => {
-      console.error("MQTT error:", err);
-    });
-
     // Time updates every second
     const clockInterval = setInterval(() => {
       setTime(new Date());
+      fetchSettings();
     }, 1000);
 
-    // Initial settings fetch + polling
+    // Initial settings fetch
     fetchSettings();
-    const settingsInterval = setInterval(fetchSettings, 5000);
 
     // Cleanup
     return () => {
       clearInterval(clockInterval);
-      clearInterval(settingsInterval);
-      client.end(true);
     };
   }, []);
 
@@ -70,18 +44,35 @@ export default function Home() {
     (s) => s.key === "weather_location"
   )?.value;
 
+  useEffect(() => {
+    
+    setInterval(() => {
+      if (showAffirmation) {
+        fetch("https://www.affirmations.dev/")
+          .then((res) => res.json())
+          .then((data) => {
+            setAffirmation(data.affirmation.toString());
+          });
+      }
+    }, 1000 * 60 * 60); // Update affirmation every hour
+  }, []);
+
+  console.log(settings);
+
   return (
-    <main className='flex h-screen flex-col items-center justify-center p-24 space-y-6'>
-      {showClock && <p className='text-7xl'>{time.toLocaleTimeString()}</p>}
-      {showAffirmation && <p className='text-2xl italic'>Stay curious.</p>}
-      {showWeather && (
-        <p className='text-lg text-gray-500'>
-          Weather in {weatherLocation ?? "your location"} coming soon…
-        </p>
-      )}
-      <div className='text-sm text-gray-400'>
-        Last MQTT message: {mqttMessage || "none yet"}
+    <main className='h-screen max-h-screen grid grid-cols-3 grid-rows-2 '>
+      <div className='col-span-3 flex flex-col'>
+        <div className='h-[10%] bg-red-500'></div>
+        <div className='h-[90%] flex flex-col justify-center items-center'>
+          {showClock && (
+            <p className='text-[128px]'>{time.toLocaleTimeString("de")}</p>
+          )}
+          {showAffirmation && <p className='text-2xl'>{affirmation}</p>}
+        </div>
       </div>
+      <div className=' bg-blue-500'></div>
+      <div className=' bg-green-500'></div>
+      <div className=' bg-pink-500'></div>
     </main>
   );
 }

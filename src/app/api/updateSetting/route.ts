@@ -1,4 +1,3 @@
-import { getClient } from "@/lib/mqtt";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -14,7 +13,7 @@ export async function POST(req: Request) {
     "Basic " + Buffer.from(`${username}:${password}`).toString("base64");
 
   // 1. Find the document with this key
-  const findRes = await fetch("http://localhost:5984/dashboardconfig/_find", {
+  const findRes = await fetch(`http://localhost:5984/dashboardconfig/_find`, {
     method: "POST",
     headers: {
       Authorization: auth,
@@ -58,17 +57,6 @@ export async function POST(req: Request) {
     }
   );
 
-  // Frontend zum neu laden aufgefordert über MQTT
-  const mqttClient = getClient();
-
-  if (mqttClient) {
-    mqttClient.publish("commands", "reload", {}, (err) => {
-      if (err) console.error("MQTT publish error:", err);
-      else console.log("MQTT reload command sent");
-    });
-  } else {
-    console.log("MQTT client not available - skipping reload command");
-  }
 
   if (!updateRes.ok) {
     return NextResponse.json(

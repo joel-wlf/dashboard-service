@@ -19,8 +19,7 @@ async function verifyToken(token: string): Promise<boolean> {
 
 export async function middleware(request: NextRequest) {
   // Check if the request is for admin routes (excluding auth endpoint)
-  if (request.nextUrl.pathname.startsWith('/api/updateSetting') || 
-      request.nextUrl.pathname.startsWith('/api/getSettings')) {
+  if (request.nextUrl.pathname.startsWith('/api/updateSetting')) {
     
     // Check for authentication cookie
     const authCookie = request.cookies.get('admin_auth');
@@ -47,5 +46,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/api/updateSetting/:path*', '/api/getSettings/:path*']
-};
+  matcher: ['/api/updateSetting/:path*']
+}
