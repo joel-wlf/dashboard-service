@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import LessonDataEditor from "./LessonDataEditor";
+import TestBedDataEditor from "./TestBedDataEditor";
 
 interface Setting {
   _id: string;
@@ -17,6 +18,22 @@ interface SettingsEditorProps {
 
 // Define all the settings that should exist with their defaults and metadata
 const SETTING_DEFINITIONS = {
+  show_testbed_info: {
+    label: "TestBed Info anzeigen",
+    description: "Zeigt die TestBed Server-Informationen auf dem Dashboard an",
+    type: "boolean",
+    defaultValue: true,
+    category: "Anzeige",
+    icon: "🖥️"
+  },
+  testbed_info: {
+    label: "TestBed Server-Daten",
+    description: "Konfiguration der TestBed Server (Raum und Gruppen)",
+    type: "testbed_data",
+    defaultValue: [],
+    category: "TestBed",
+    icon: "🏢"
+  },
   show_clock: {
     label: "Uhr anzeigen",
     description: "Zeigt die aktuelle Uhrzeit auf dem Hauptbildschirm an",
@@ -72,8 +89,23 @@ const SETTING_DEFINITIONS = {
 };
 
 export default function SettingsEditor({ settings, onSettingChange }: SettingsEditorProps) {
-  // Group settings by category
-  const categories = Array.from(new Set(Object.values(SETTING_DEFINITIONS).map(def => def.category)));
+  // Debounce timeout reference
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounced onChange function
+  const debouncedOnSettingChange = useCallback((key: string, value: any) => {
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+    
+    debounceTimeoutRef.current = setTimeout(() => {
+      onSettingChange(key, value);
+    }, 300);
+  }, [onSettingChange]);
+
+  // Group settings by category with custom order
+  const allCategories = Array.from(new Set(Object.values(SETTING_DEFINITIONS).map(def => def.category)));
+  const categories = ["TestBed", "Anzeige", "Standort", "Zeitplanung"].filter(cat => allCategories.includes(cat));
   
   // Get setting value or default
   const getSettingValue = (key: string) => {
@@ -92,7 +124,7 @@ export default function SettingsEditor({ settings, onSettingChange }: SettingsEd
             <input
               type="checkbox"
               checked={value || false}
-              onChange={(e) => onSettingChange(key, e.target.checked)}
+              onChange={(e) => debouncedOnSettingChange(key, e.target.checked)}
               className="h-5 w-5 rounded focus:ring-2"
               style={{
                 accentColor: 'var(--button-primary)',
@@ -111,7 +143,7 @@ export default function SettingsEditor({ settings, onSettingChange }: SettingsEd
           <input
             type="text"
             value={value || ""}
-            onChange={(e) => onSettingChange(key, e.target.value)}
+            onChange={(e) => debouncedOnSettingChange(key, e.target.value)}
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
             style={{
               backgroundColor: 'var(--admin-input)',
@@ -131,7 +163,7 @@ export default function SettingsEditor({ settings, onSettingChange }: SettingsEd
               max={definition.max || 100}
               step={definition.step || 1}
               value={value || definition.defaultValue}
-              onChange={(e) => onSettingChange(key, parseFloat(e.target.value))}
+              onChange={(e) => debouncedOnSettingChange(key, parseFloat(e.target.value))}
               className="w-full h-2 rounded-lg appearance-none cursor-pointer"
               style={{
                 backgroundColor: 'var(--progress-bg)',
@@ -152,7 +184,15 @@ export default function SettingsEditor({ settings, onSettingChange }: SettingsEd
         return (
           <LessonDataEditor
             value={value || []}
-            onChange={(newData) => onSettingChange(key, newData)}
+            onChange={(newData) => debouncedOnSettingChange(key, newData)}
+          />
+        );
+
+      case "testbed_data":
+        return (
+          <TestBedDataEditor
+            value={value || []}
+            onChange={(newData) => debouncedOnSettingChange(key, newData)}
           />
         );
 
@@ -163,9 +203,9 @@ export default function SettingsEditor({ settings, onSettingChange }: SettingsEd
             onChange={(e) => {
               try {
                 const parsed = JSON.parse(e.target.value);
-                onSettingChange(key, parsed);
+                debouncedOnSettingChange(key, parsed);
               } catch {
-                onSettingChange(key, e.target.value);
+                debouncedOnSettingChange(key, e.target.value);
               }
             }}
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 font-mono text-sm"
@@ -210,10 +250,6 @@ export default function SettingsEditor({ settings, onSettingChange }: SettingsEd
                       
                       <div className="pt-2">
                         {renderSettingInput(key, definition)}
-                      </div>
-                      
-                      <div className="text-xs px-3 py-1 rounded border" style={{ color: 'var(--muted-foreground)', backgroundColor: 'var(--admin-input)', borderColor: 'var(--border)' }}>
-                        <span className="font-mono">Schlüssel: {key}</span>
                       </div>
                     </div>
                   </div>

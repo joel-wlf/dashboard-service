@@ -225,7 +225,6 @@ export default function AdminPage() {
         )}
 
         <div>
-          <h2 className="text-2xl font-bold mb-6" style={{ color: 'var(--foreground)' }}>Dashboard Einstellungen</h2>
           <SettingsEditor 
             settings={settings} 
             onSettingChange={handleSettingChange}

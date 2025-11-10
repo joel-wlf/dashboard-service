@@ -46,6 +46,8 @@ export default function Home() {
   const lessonData = settings.find((s) => s.key === "lesson_data")?.value || [];
   const showOvertimeAlarm =
     settings.find((s) => s.key === "show_overtime_alarm")?.value ?? true;
+  const showTestBedInfo = 
+    settings.find((s) => s.key === "show_testbed_info")?.value ?? true;
   const testBedData = settings.find((s) => s.key === "testbed_info")?.value || [];
 
   console.log("Settings:", settings);
@@ -85,7 +87,7 @@ export default function Home() {
         <div className='border-x border-gray-700 p-3 overflow-hidden col-span-2'>
           <TrainDepartures />
         </div>
-        <TestBedInfo testBedData={testBedData} />
+        {showTestBedInfo && <TestBedInfo testBedData={testBedData} />}
       </main>
     </div>
   );
