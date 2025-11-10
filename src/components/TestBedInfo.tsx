@@ -18,20 +18,20 @@ export default function TestBedInfo({ testBedData = [] }: TestBedInfoProps) {
     .sort((a, b) => a.ort.localeCompare(b.ort));
 
   const renderServerCard = (item: TestBedData | null, isEmpty = false) => (
-    <div className='w-full mb-2'>
+    <div className='h-full w-full p-1'>
       <div
-        className={`bg-neutral-700 w-full h-16 rounded-lg p-3 flex flex-col justify-center items-center text-center ${isEmpty ? 'opacity-50' : ''}`}
+        className={`bg-neutral-700 font-mono px-2 w-full h-full rounded flex flex-col justify-center items-center text-center ${isEmpty ? 'opacity-50' : ''}`}
         style={{ backgroundColor: "var(--train-card)" }}
       >
         {item ? (
-          <>
-            <div className='text-lg font-bold text-white mb-1'>
-              Server {item.ort}
+          <div className="grid grid-cols-5 w-full h-full">
+            <div className="font-bold text-2xl flex justify-center items-center">
+                {item.ort}
             </div>
-            <div className='text-xs text-gray-300'>
-              {item.gruppe}
+            <div className="col-span-4 text-lg flex flex-col justify-center items-start p-2">
+                {item.gruppe}
             </div>
-          </>
+          </div>
         ) : (
           <div className='text-sm text-gray-500'>
             Nicht belegt
@@ -42,10 +42,9 @@ export default function TestBedInfo({ testBedData = [] }: TestBedInfoProps) {
   );
 
   return (
-    <div className='grid gap-4 grid-cols-2 w-full col-span-3 p-3'>
+    <div className='grid grid-cols-2 w-full p-2 col-span-3'>
       {/* Room 1 servers (1.1 - 1.4) */}
-      <div className='flex flex-col'>
-        <div className='text-lg font-bold text-white mb-2 text-center'>Raum 1</div>
+      <div className='grid'>
         {[1, 2, 3, 4].map(num => {
           const server = room1Servers.find(s => s.ort === `1.${num}`);
           return <div key={`1.${num}`}>{renderServerCard(server, !server)}</div>;
@@ -53,8 +52,7 @@ export default function TestBedInfo({ testBedData = [] }: TestBedInfoProps) {
       </div>
 
       {/* Room 2 servers (2.1 - 2.4) */}
-      <div className='flex flex-col'>
-        <div className='text-lg font-bold text-white mb-2 text-center'>Raum 2</div>
+      <div className='grid'>
         {[1, 2, 3, 4].map(num => {
           const server = room2Servers.find(s => s.ort === `2.${num}`);
           return <div key={`2.${num}`}>{renderServerCard(server, !server)}</div>;

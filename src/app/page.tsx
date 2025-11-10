@@ -40,14 +40,17 @@ export default function Home() {
   // Extract settings
   const showClock = settings.find((s) => s.key === "show_clock")?.value;
   const showWeather = settings.find((s) => s.key === "show_weather")?.value;
-  const zipCode = settings.find((s) => s.key === "zip_code")?.value;
+  const zipCode = settings.find((s) => s.key === "zip_code")?.value || 
+                  settings.find((s) => s.key === "weather_location")?.value;
   const zoomLevel = settings.find((s) => s.key === "zoom_level")?.value || 100;
   const lessonData = settings.find((s) => s.key === "lesson_data")?.value || [];
   const showOvertimeAlarm =
     settings.find((s) => s.key === "show_overtime_alarm")?.value ?? true;
   const testBedData = settings.find((s) => s.key === "testbed_info")?.value || [];
 
-  console.log(settings);
+  console.log("Settings:", settings);
+  console.log("Show Weather:", showWeather);
+  console.log("Zip Code:", zipCode);
 
   return (
     <div className='screensaver-container'>
@@ -76,10 +79,10 @@ export default function Home() {
             )}
           </div>
         </div>
-        <div className=''>
+        <div className='col-span-1'>
           {showWeather && zipCode && <WeatherWidget zipCode={zipCode} />}
         </div>
-        <div className='border-x border-gray-700 p-4 overflow-hidden col-span-2'>
+        <div className='border-x border-gray-700 p-3 overflow-hidden col-span-2'>
           <TrainDepartures />
         </div>
         <TestBedInfo testBedData={testBedData} />
