@@ -85,8 +85,8 @@ export default function TrainDepartures({
   if (error) {
     return (
       <div className={`${className} flex flex-col items-center justify-center`}>
-        <h2 className='text-xl font-bold mb-4'>Osnabrück HBF Abfahrten</h2>
-        <p className='text-red-500'>{error}</p>
+        <h2 className='text-xl font-bold mb-4 text-white'>Osnabrück HBF Abfahrten</h2>
+        <p className='text-red-400'>{error}</p>
       </div>
     );
   }
@@ -95,16 +95,16 @@ export default function TrainDepartures({
     <div className={`${className} flex flex-col overflow-hidden`}>
       <div className='space-y-2 overflow-y-auto'>
         {departures.slice(0, 8).map((departure, index) => (
-          <div key={index} className='bg-gray-100 rounded p-1 text-sm'>
-            <div className='flex font-mono text-lg justify-between items-start'>
+          <div key={index} className='rounded p-1 text-sm' style={{ backgroundColor: 'var(--train-card)' }}>
+            <div className='flex font-mono text-lg justify-between items-start text-white'>
               <div className="flex gap-2 items-center">
-                <p>{departure.line.name}</p> <IconArrowRight className="size-4 " />
+                <p>{departure.line.name}</p> <IconArrowRight className="size-4" />
                 <p>{departure.direction}</p>
               </div>
               <div className='text-right'>
                 <span className='font-mono'>{formatTime(departure.when)}</span>
                 {departure.delay !== 0 && departure.delay > 0 && (
-                  <span className='text-red-500 ml-1'>
+                  <span className='text-red-400 ml-1'>
                     {formatDelay(departure.delay)}
                   </span>
                 )}

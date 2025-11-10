@@ -65,17 +65,21 @@ export default function LessonProgressBar({ lessonData, currentTime, showOvertim
     const colorProgress = 1 - progress;
     
     if (colorProgress < 0.5) {
-      // Green to Yellow (0-0.5)
+      // Dark Green to Orange (0-0.5)
       const ratio = colorProgress * 2; // 0-1
-      const red = Math.round(255 * ratio);
-      const green = 255;
-      return `rgb(${red}, ${green}, 0)`;
+      // Start: dark green rgb(21, 128, 61) -> End: orange rgb(217, 119, 6)
+      const red = Math.round(21 + (217 - 21) * ratio);
+      const green = Math.round(128 + (119 - 128) * ratio);
+      const blue = Math.round(61 + (6 - 61) * ratio);
+      return `rgb(${red}, ${green}, ${blue})`;
     } else {
-      // Yellow to Red (0.5-1)
+      // Orange to Deep Red (0.5-1)
       const ratio = (colorProgress - 0.5) * 2; // 0-1
-      const red = 255;
-      const green = Math.round(255 * (1 - ratio));
-      return `rgb(${red}, ${green}, 0)`;
+      // Start: orange rgb(217, 119, 6) -> End: deep red rgb(185, 28, 28)
+      const red = Math.round(217 + (185 - 217) * ratio);
+      const green = Math.round(119 + (28 - 119) * ratio);
+      const blue = Math.round(6 + (28 - 6) * ratio);
+      return `rgb(${red}, ${green}, ${blue})`;
     }
   };
 
@@ -83,7 +87,7 @@ export default function LessonProgressBar({ lessonData, currentTime, showOvertim
 
   return (
     <>
-      <div className='h-full relative bg-gray-200'>
+      <div className='h-full relative' style={{ backgroundColor: 'var(--progress-bg)' }}>
         {currentPeriod && !currentPeriod.isOvertime && (
           <div 
             className='h-full transition-all duration-1000 ease-linear'
@@ -95,11 +99,11 @@ export default function LessonProgressBar({ lessonData, currentTime, showOvertim
         )}
         
         {currentPeriod && currentPeriod.isOvertime && (
-          <div className='h-full bg-red-600' />
+          <div className='h-full' style={{ backgroundColor: 'var(--progress-red)' }} />
         )}
         
         {!currentPeriod && (
-          <div className='h-full bg-gray-100' />
+          <div className='h-full' style={{ backgroundColor: 'var(--muted)' }} />
         )}
       </div>
 
@@ -110,12 +114,12 @@ export default function LessonProgressBar({ lessonData, currentTime, showOvertim
                animation: 'flashRedWhite 1s infinite',
                backgroundColor: 'rgb(220, 38, 38)' // red-600
              }}>
-          <div className='bg-white rounded-2xl p-12 shadow-2xl text-center border-8 border-red-700 max-w-2xl mx-4'>
+          <div className='rounded-2xl p-12 shadow-2xl text-center border-8 border-red-700 max-w-2xl mx-4' style={{ backgroundColor: 'var(--card)' }}>
             <div className='text-8xl mb-6'>⏰</div>
-            <h1 className='text-6xl font-bold text-red-600 mb-4'>
+            <h1 className='text-6xl font-bold text-red-500 mb-4'>
               Überzieh Alarm!
             </h1>
-            <p className='text-3xl text-red-500 font-semibold'>
+            <p className='text-3xl text-red-400 font-semibold'>
               {currentPeriod.type === 'stunde' ? 'Stunde' : 'Pause'} zu Ende
             </p>
           </div>

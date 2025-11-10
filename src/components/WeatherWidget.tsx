@@ -78,7 +78,7 @@ export default function WeatherWidget({ zipCode }: WeatherWidgetProps) {
   if (!zipCode) {
     return (
       <div className='h-full flex items-center justify-center p-6'>
-        <div className='text-gray-400 text-center'>
+        <div className='text-center' style={{ color: 'var(--muted-foreground)' }}>
           <div className='text-4xl mb-2'>🌍</div>
           <div className='text-sm'>No location set</div>
         </div>
@@ -91,7 +91,7 @@ export default function WeatherWidget({ zipCode }: WeatherWidgetProps) {
       <div className='h-full flex items-center justify-center p-6'>
         <div className='text-center'>
           <div className='animate-pulse text-4xl mb-3'>🌤️</div>
-          <div className='text-gray-400 text-sm'>Loading weather...</div>
+          <div className='text-sm' style={{ color: 'var(--muted-foreground)' }}>Loading weather...</div>
         </div>
       </div>
     );
@@ -102,10 +102,10 @@ export default function WeatherWidget({ zipCode }: WeatherWidgetProps) {
       <div className='h-full flex items-center justify-center p-6'>
         <div className='text-center'>
           <div className='text-4xl mb-2'>⚠️</div>
-          <div className='text-red-500 text-sm font-medium mb-1'>
+          <div className='text-red-400 text-sm font-medium mb-1'>
             Weather unavailable
           </div>
-          <div className='text-xs text-gray-400'>{error}</div>
+          <div className='text-xs' style={{ color: 'var(--muted-foreground)' }}>{error}</div>
         </div>
       </div>
     );
@@ -114,7 +114,7 @@ export default function WeatherWidget({ zipCode }: WeatherWidgetProps) {
   if (!weather) {
     return (
       <div className='h-full flex items-center justify-center p-6'>
-        <div className='text-gray-400 text-sm'>No data available</div>
+        <div className='text-sm' style={{ color: 'var(--muted-foreground)' }}>No data available</div>
       </div>
     );
   }
@@ -158,10 +158,10 @@ export default function WeatherWidget({ zipCode }: WeatherWidgetProps) {
       <div className='text-[100px]'>{getWeatherIcon(weather.icon)}</div>
 
       {/* Temperature */}
-      <div className='text-5xl font-bold mb-2'>{weather.temperature}°C</div>
+      <div className='text-5xl font-bold mb-2 text-white'>{weather.temperature}°C</div>
 
       {/* Condition */}
-      <div className='text-base text-gray-600 capitalize mb-6'>Osnabrück</div>
+      <div className='text-base capitalize mb-6' style={{ color: 'var(--weather-text)' }}>Osnabrück</div>
     </div>
   );
 }

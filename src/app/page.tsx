@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import TrainDepartures from "@/components/TrainDepartures";
 import WeatherWidget from "@/components/WeatherWidget";
 import LessonProgressBar from "@/components/LessonProgressBar";
+import TestBedInfo from "@/components/TestBedInfo";
 
 export default function Home() {
   const [time, setTime] = useState(new Date());
@@ -42,7 +43,9 @@ export default function Home() {
   const zipCode = settings.find((s) => s.key === "zip_code")?.value;
   const zoomLevel = settings.find((s) => s.key === "zoom_level")?.value || 100;
   const lessonData = settings.find((s) => s.key === "lesson_data")?.value || [];
-  const showOvertimeAlarm = settings.find((s) => s.key === "show_overtime_alarm")?.value ?? true;
+  const showOvertimeAlarm =
+    settings.find((s) => s.key === "show_overtime_alarm")?.value ?? true;
+  const testBedData = settings.find((s) => s.key === "testbed_info")?.value || [];
 
   console.log(settings);
 
@@ -65,19 +68,21 @@ export default function Home() {
               showOvertimeAlarm={showOvertimeAlarm}
             />
           </div>
-          <div className='h-[90%] border-y flex flex-col justify-center items-center'>
+          <div className='h-[90%] border-y border-gray-700 flex flex-col justify-center items-center'>
             {showClock && (
-              <p className='text-[128px]'>{time.toLocaleTimeString("de")}</p>
+              <p className='text-[128px] text-white'>
+                {time.toLocaleTimeString("de")}
+              </p>
             )}
           </div>
         </div>
         <div className=''>
           {showWeather && zipCode && <WeatherWidget zipCode={zipCode} />}
         </div>
-        <div className='border-x p-4 overflow-hidden col-span-2'>
+        <div className='border-x border-gray-700 p-4 overflow-hidden col-span-2'>
           <TrainDepartures />
         </div>
-        <div className=''></div>
+        <TestBedInfo testBedData={testBedData} />
       </main>
     </div>
   );

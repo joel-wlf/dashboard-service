@@ -93,9 +93,14 @@ export default function SettingsEditor({ settings, onSettingChange }: SettingsEd
               type="checkbox"
               checked={value || false}
               onChange={(e) => onSettingChange(key, e.target.checked)}
-              className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              className="h-5 w-5 rounded focus:ring-2"
+              style={{
+                accentColor: 'var(--button-primary)',
+                backgroundColor: 'var(--admin-input)',
+                borderColor: 'var(--admin-border)'
+              }}
             />
-            <span className={`text-sm font-medium ${value ? 'text-green-600' : 'text-gray-500'}`}>
+            <span className={`text-sm font-medium ${value ? 'text-green-400' : 'text-gray-400'}`}>
               {value ? "Aktiviert" : "Deaktiviert"}
             </span>
           </div>
@@ -107,7 +112,12 @@ export default function SettingsEditor({ settings, onSettingChange }: SettingsEd
             type="text"
             value={value || ""}
             onChange={(e) => onSettingChange(key, e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
+            style={{
+              backgroundColor: 'var(--admin-input)',
+              borderColor: 'var(--admin-border)',
+              color: 'var(--foreground)'
+            }}
             placeholder={definition.placeholder || "Wert eingeben..."}
           />
         );
@@ -122,14 +132,18 @@ export default function SettingsEditor({ settings, onSettingChange }: SettingsEd
               step={definition.step || 1}
               value={value || definition.defaultValue}
               onChange={(e) => onSettingChange(key, parseFloat(e.target.value))}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+              className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+              style={{
+                backgroundColor: 'var(--progress-bg)',
+                accentColor: 'var(--button-primary)'
+              }}
             />
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-500">{definition.min || 0}</span>
-              <div className="bg-blue-100 px-3 py-1 rounded-full">
-                <span className="text-sm font-semibold text-blue-800">{value || definition.defaultValue}{key === 'zoom_level' ? '%' : ''}</span>
+              <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>{definition.min || 0}</span>
+              <div className="px-3 py-1 rounded-full" style={{ backgroundColor: 'var(--accent)' }}>
+                <span className="text-sm font-semibold" style={{ color: 'var(--accent-foreground)' }}>{value || definition.defaultValue}{key === 'zoom_level' ? '%' : ''}</span>
               </div>
-              <span className="text-sm text-gray-500">{definition.max || 100}</span>
+              <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>{definition.max || 100}</span>
             </div>
           </div>
         );
@@ -154,7 +168,12 @@ export default function SettingsEditor({ settings, onSettingChange }: SettingsEd
                 onSettingChange(key, e.target.value);
               }
             }}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 font-mono text-sm"
+            style={{
+              backgroundColor: 'var(--admin-input)',
+              borderColor: 'var(--admin-border)',
+              color: 'var(--foreground)'
+            }}
             rows={4}
           />
         );
@@ -164,36 +183,36 @@ export default function SettingsEditor({ settings, onSettingChange }: SettingsEd
   return (
     <div className="space-y-8">
       {categories.map(category => (
-        <div key={category} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-800">{category}</h3>
+        <div key={category} className="rounded-xl shadow-sm border overflow-hidden" style={{ backgroundColor: 'var(--admin-card)', borderColor: 'var(--admin-border)' }}>
+          <div className="px-6 py-4 border-b" style={{ backgroundColor: 'var(--accent)', borderColor: 'var(--admin-border)' }}>
+            <h3 className="text-lg font-semibold" style={{ color: 'var(--foreground)' }}>{category}</h3>
           </div>
           
           <div className="p-6 space-y-6">
             {Object.entries(SETTING_DEFINITIONS)
               .filter(([_, def]) => def.category === category)
               .map(([key, definition]) => (
-                <div key={key} className="bg-gray-50 rounded-lg p-5 border border-gray-100">
+                <div key={key} className="rounded-lg p-5 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
                   <div className="flex items-start space-x-4">
                     <div className="text-2xl">{definition.icon}</div>
                     <div className="flex-1 space-y-3">
                       <div>
-                        <h4 className="text-lg font-medium text-gray-800 flex items-center space-x-2">
+                        <h4 className="text-lg font-medium flex items-center space-x-2" style={{ color: 'var(--foreground)' }}>
                           <span>{definition.label}</span>
                           {key === 'lesson_data' && (
-                            <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full font-medium">
+                            <span className="text-xs px-2 py-1 rounded-full font-medium" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
                               Erweitert
                             </span>
                           )}
                         </h4>
-                        <p className="text-sm text-gray-600 mt-1">{definition.description}</p>
+                        <p className="text-sm mt-1" style={{ color: 'var(--muted-foreground)' }}>{definition.description}</p>
                       </div>
                       
                       <div className="pt-2">
                         {renderSettingInput(key, definition)}
                       </div>
                       
-                      <div className="text-xs text-gray-500 bg-white px-3 py-1 rounded border">
+                      <div className="text-xs px-3 py-1 rounded border" style={{ color: 'var(--muted-foreground)', backgroundColor: 'var(--admin-input)', borderColor: 'var(--border)' }}>
                         <span className="font-mono">Schlüssel: {key}</span>
                       </div>
                     </div>
@@ -204,12 +223,12 @@ export default function SettingsEditor({ settings, onSettingChange }: SettingsEd
         </div>
       ))}
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <div className="border rounded-lg p-4" style={{ backgroundColor: 'var(--accent)', borderColor: 'var(--border)' }}>
         <div className="flex items-start space-x-3">
-          <div className="text-blue-500 text-xl">ℹ️</div>
+          <div className="text-xl" style={{ color: 'var(--button-primary)' }}>ℹ️</div>
           <div>
-            <h4 className="text-blue-800 font-medium">Über diese Einstellungen</h4>
-            <p className="text-blue-700 text-sm mt-1">
+            <h4 className="font-medium" style={{ color: 'var(--foreground)' }}>Über diese Einstellungen</h4>
+            <p className="text-sm mt-1" style={{ color: 'var(--muted-foreground)' }}>
               Alle Änderungen werden automatisch gespeichert und in Echtzeit auf dem Dashboard angewendet. 
               Die Einstellungen werden sicher in Ihrer CouchDB-Datenbank gespeichert.
             </p>

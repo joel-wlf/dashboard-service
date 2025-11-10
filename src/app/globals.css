@@ -1,8 +1,34 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --card: #1a1a1a;
+  --card-foreground: #ededed;
+  --border: #333333;
+  --input: #262626;
+  --muted: #404040;
+  --muted-foreground: #a3a3a3;
+  --accent: #262626;
+  --accent-foreground: #ededed;
+  --destructive: #dc2626;
+  --destructive-foreground: #fecaca;
+  --progress-bg: #000;
+  --progress-green: #15803d;
+  --progress-yellow: #d97706;
+  --progress-red: #b91c1c;
+  --train-card: #262626;
+  --weather-text: #d4d4d8;
+  --admin-bg: #171717;
+  --admin-card: #262626;
+  --admin-input: #1a1a1a;
+  --admin-border: #404040;
+  --button-primary: #3b82f6;
+  --button-primary-hover: #2563eb;
+  --button-success: #22c55e;
+  --button-success-hover: #16a34a;
+  --button-danger: #ef4444;
+  --button-danger-hover: #dc2626;
 }
 
 @theme inline {
@@ -11,7 +37,6 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
-
 
 body {
   background: var(--background);
@@ -31,7 +56,7 @@ body {
     background-color: rgb(220, 38, 38); /* red-600 */
   }
   50% {
-    background-color: rgb(255, 255, 255); /* white */
+    background-color: rgb(15, 15, 15); /* dark background */
   }
   100% {
     background-color: rgb(220, 38, 38); /* red-600 */
