@@ -75,13 +75,13 @@ export default function Home() {
           </div>
           <div className='h-[90%] border-y border-gray-700 flex flex-col justify-center items-center'>
             {showClock && (
-              <p className='text-[128px] text-white'>
+              <p className='text-[128px] font-mono text-white'>
                 {time.toLocaleTimeString("de")}
               </p>
             )}
           </div>
         </div>
-        <div className='col-span-1'>
+        <div className='col-span-1 font-mono'>
           {showWeather && zipCode && <WeatherWidget zipCode={zipCode} />}
         </div>
         <div className='border-x border-gray-700 p-3 overflow-hidden col-span-2'>

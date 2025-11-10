@@ -24,7 +24,7 @@ const SETTING_DEFINITIONS = {
     type: "boolean",
     defaultValue: true,
     category: "Anzeige",
-    icon: "🖥️"
+    icon: "🖥️",
   },
   testbed_info: {
     label: "TestBed Server-Daten",
@@ -32,7 +32,7 @@ const SETTING_DEFINITIONS = {
     type: "testbed_data",
     defaultValue: [],
     category: "TestBed",
-    icon: "🏢"
+    icon: "🏢",
   },
   show_clock: {
     label: "Uhr anzeigen",
@@ -40,15 +40,15 @@ const SETTING_DEFINITIONS = {
     type: "boolean",
     defaultValue: true,
     category: "Anzeige",
-    icon: "🕐"
+    icon: "🕐",
   },
   show_weather: {
     label: "Wetter anzeigen",
     description: "Zeigt das aktuelle Wetter auf dem Dashboard an",
-    type: "boolean", 
+    type: "boolean",
     defaultValue: true,
     category: "Anzeige",
-    icon: "🌤️"
+    icon: "🌤️",
   },
   zip_code: {
     label: "Postleitzahl",
@@ -57,7 +57,7 @@ const SETTING_DEFINITIONS = {
     defaultValue: "",
     category: "Standort",
     icon: "📍",
-    placeholder: "z.B. 10115"
+    placeholder: "z.B. 10115",
   },
   zoom_level: {
     label: "Zoom Level",
@@ -68,7 +68,7 @@ const SETTING_DEFINITIONS = {
     icon: "🔍",
     min: 50,
     max: 200,
-    step: 5
+    step: 5,
   },
   lesson_data: {
     label: "Stundenplan",
@@ -76,41 +76,55 @@ const SETTING_DEFINITIONS = {
     type: "lesson_schedule",
     defaultValue: [],
     category: "Zeitplanung",
-    icon: "📚"
+    icon: "📚",
   },
   show_overtime_alarm: {
     label: "Überzieh-Alarm anzeigen",
-    description: "Zeigt eine Vollbild-Warnung an, wenn eine Stunde oder Pause überzogen wird",
+    description:
+      "Zeigt eine Vollbild-Warnung an, wenn eine Stunde oder Pause überzogen wird",
     type: "boolean",
     defaultValue: true,
     category: "Zeitplanung",
-    icon: "🚨"
-  }
+    icon: "🚨",
+  },
 };
 
-export default function SettingsEditor({ settings, onSettingChange }: SettingsEditorProps) {
+export default function SettingsEditor({
+  settings,
+  onSettingChange,
+}: SettingsEditorProps) {
   // Debounce timeout reference
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Debounced onChange function
-  const debouncedOnSettingChange = useCallback((key: string, value: any) => {
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current);
-    }
-    
-    debounceTimeoutRef.current = setTimeout(() => {
-      onSettingChange(key, value);
-    }, 300);
-  }, [onSettingChange]);
+  const debouncedOnSettingChange = useCallback(
+    (key: string, value: any) => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+
+      debounceTimeoutRef.current = setTimeout(() => {
+        onSettingChange(key, value);
+      }, 300);
+    },
+    [onSettingChange]
+  );
 
   // Group settings by category with custom order
-  const allCategories = Array.from(new Set(Object.values(SETTING_DEFINITIONS).map(def => def.category)));
-  const categories = ["TestBed", "Anzeige", "Standort", "Zeitplanung"].filter(cat => allCategories.includes(cat));
-  
+  const allCategories = Array.from(
+    new Set(Object.values(SETTING_DEFINITIONS).map((def) => def.category))
+  );
+  const categories = ["TestBed", "Anzeige", "Standort", "Zeitplanung"].filter(
+    (cat) => allCategories.includes(cat)
+  );
+
   // Get setting value or default
   const getSettingValue = (key: string) => {
-    const setting = settings.find(s => s.key === key);
-    return setting ? setting.value : SETTING_DEFINITIONS[key as keyof typeof SETTING_DEFINITIONS]?.defaultValue;
+    const setting = settings.find((s) => s.key === key);
+    return setting
+      ? setting.value
+      : SETTING_DEFINITIONS[key as keyof typeof SETTING_DEFINITIONS]
+          ?.defaultValue;
   };
 
   // Render different input types
@@ -120,19 +134,23 @@ export default function SettingsEditor({ settings, onSettingChange }: SettingsEd
     switch (definition.type) {
       case "boolean":
         return (
-          <div className="flex items-center space-x-3">
+          <div className='flex items-center space-x-3'>
             <input
-              type="checkbox"
+              type='checkbox'
               checked={value || false}
               onChange={(e) => debouncedOnSettingChange(key, e.target.checked)}
-              className="h-5 w-5 rounded focus:ring-2"
+              className='h-5 w-5 rounded focus:ring-2'
               style={{
-                accentColor: 'var(--button-primary)',
-                backgroundColor: 'var(--admin-input)',
-                borderColor: 'var(--admin-border)'
+                accentColor: "var(--button-primary)",
+                backgroundColor: "var(--admin-input)",
+                borderColor: "var(--admin-border)",
               }}
             />
-            <span className={`text-sm font-medium ${value ? 'text-green-400' : 'text-gray-400'}`}>
+            <span
+              className={`text-sm font-medium ${
+                value ? "text-green-400" : "text-gray-400"
+              }`}
+            >
               {value ? "Aktiviert" : "Deaktiviert"}
             </span>
           </div>
@@ -141,14 +159,14 @@ export default function SettingsEditor({ settings, onSettingChange }: SettingsEd
       case "string":
         return (
           <input
-            type="text"
+            type='text'
             value={value || ""}
             onChange={(e) => debouncedOnSettingChange(key, e.target.value)}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
+            className='w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent'
             style={{
-              backgroundColor: 'var(--admin-input)',
-              borderColor: 'var(--admin-border)',
-              color: 'var(--foreground)'
+              backgroundColor: "var(--admin-input)",
+              borderColor: "var(--admin-border)",
+              color: "var(--foreground)",
             }}
             placeholder={definition.placeholder || "Wert eingeben..."}
           />
@@ -156,26 +174,47 @@ export default function SettingsEditor({ settings, onSettingChange }: SettingsEd
 
       case "number":
         return (
-          <div className="space-y-2">
+          <div className='space-y-2'>
             <input
-              type="range"
+              type='range'
               min={definition.min || 0}
               max={definition.max || 100}
               step={definition.step || 1}
               value={value || definition.defaultValue}
-              onChange={(e) => debouncedOnSettingChange(key, parseFloat(e.target.value))}
-              className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+              onChange={(e) =>
+                debouncedOnSettingChange(key, parseFloat(e.target.value))
+              }
+              className='w-full h-2 rounded-lg appearance-none cursor-pointer'
               style={{
-                backgroundColor: 'var(--progress-bg)',
-                accentColor: 'var(--button-primary)'
+                backgroundColor: "var(--progress-bg)",
+                accentColor: "var(--button-primary)",
               }}
             />
-            <div className="flex justify-between items-center">
-              <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>{definition.min || 0}</span>
-              <div className="px-3 py-1 rounded-full" style={{ backgroundColor: 'var(--accent)' }}>
-                <span className="text-sm font-semibold" style={{ color: 'var(--accent-foreground)' }}>{value || definition.defaultValue}{key === 'zoom_level' ? '%' : ''}</span>
+            <div className='flex justify-between items-center'>
+              <span
+                className='text-sm'
+                style={{ color: "var(--muted-foreground)" }}
+              >
+                {definition.min || 0}
+              </span>
+              <div
+                className='px-3 py-1 rounded-full'
+                style={{ backgroundColor: "var(--accent)" }}
+              >
+                <span
+                  className='text-sm font-semibold'
+                  style={{ color: "var(--accent-foreground)" }}
+                >
+                  {value || definition.defaultValue}
+                  {key === "zoom_level" ? "%" : ""}
+                </span>
               </div>
-              <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>{definition.max || 100}</span>
+              <span
+                className='text-sm'
+                style={{ color: "var(--muted-foreground)" }}
+              >
+                {definition.max || 100}
+              </span>
             </div>
           </div>
         );
@@ -199,7 +238,9 @@ export default function SettingsEditor({ settings, onSettingChange }: SettingsEd
       default:
         return (
           <textarea
-            value={typeof value === 'string' ? value : JSON.stringify(value, null, 2)}
+            value={
+              typeof value === "string" ? value : JSON.stringify(value, null, 2)
+            }
             onChange={(e) => {
               try {
                 const parsed = JSON.parse(e.target.value);
@@ -208,11 +249,11 @@ export default function SettingsEditor({ settings, onSettingChange }: SettingsEd
                 debouncedOnSettingChange(key, e.target.value);
               }
             }}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 font-mono text-sm"
+            className='w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 font-mono text-sm'
             style={{
-              backgroundColor: 'var(--admin-input)',
-              borderColor: 'var(--admin-border)',
-              color: 'var(--foreground)'
+              backgroundColor: "var(--admin-input)",
+              borderColor: "var(--admin-border)",
+              color: "var(--foreground)",
             }}
             rows={4}
           />
@@ -221,34 +262,62 @@ export default function SettingsEditor({ settings, onSettingChange }: SettingsEd
   };
 
   return (
-    <div className="space-y-8">
-      {categories.map(category => (
-        <div key={category} className="rounded-xl shadow-sm border overflow-hidden" style={{ backgroundColor: 'var(--admin-card)', borderColor: 'var(--admin-border)' }}>
-          <div className="px-6 py-4 border-b" style={{ backgroundColor: 'var(--accent)', borderColor: 'var(--admin-border)' }}>
-            <h3 className="text-lg font-semibold" style={{ color: 'var(--foreground)' }}>{category}</h3>
+    <div className='space-y-8'>
+      {categories.map((category) => (
+        <div
+          key={category}
+          className='rounded-xl shadow-sm border overflow-hidden'
+          style={{
+            backgroundColor: "var(--admin-card)",
+            borderColor: "var(--admin-border)",
+          }}
+        >
+          <div
+            className='px-6 py-4 border-b'
+            style={{
+              backgroundColor: "var(--accent)",
+              borderColor: "var(--admin-border)",
+            }}
+          >
+            <h3
+              className='text-lg font-semibold'
+              style={{ color: "var(--foreground)" }}
+            >
+              {category}
+            </h3>
           </div>
-          
-          <div className="p-6 space-y-6">
+
+          <div className='p-6 space-y-6'>
             {Object.entries(SETTING_DEFINITIONS)
               .filter(([_, def]) => def.category === category)
               .map(([key, definition]) => (
-                <div key={key} className="rounded-lg p-5 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-                  <div className="flex items-start space-x-4">
-                    <div className="text-2xl">{definition.icon}</div>
-                    <div className="flex-1 space-y-3">
+                <div
+                  key={key}
+                  className='rounded-lg p-5 border'
+                  style={{
+                    backgroundColor: "var(--card)",
+                    borderColor: "var(--border)",
+                  }}
+                >
+                  <div className='flex items-start space-x-4'>
+                    <div className='text-2xl'>{definition.icon}</div>
+                    <div className='flex-1 space-y-3'>
                       <div>
-                        <h4 className="text-lg font-medium flex items-center space-x-2" style={{ color: 'var(--foreground)' }}>
+                        <h4
+                          className='text-lg font-medium flex items-center space-x-2'
+                          style={{ color: "var(--foreground)" }}
+                        >
                           <span>{definition.label}</span>
-                          {key === 'lesson_data' && (
-                            <span className="text-xs px-2 py-1 rounded-full font-medium" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
-                              Erweitert
-                            </span>
-                          )}
                         </h4>
-                        <p className="text-sm mt-1" style={{ color: 'var(--muted-foreground)' }}>{definition.description}</p>
+                        <p
+                          className='text-sm mt-1'
+                          style={{ color: "var(--muted-foreground)" }}
+                        >
+                          {definition.description}
+                        </p>
                       </div>
-                      
-                      <div className="pt-2">
+
+                      <div className='pt-2'>
                         {renderSettingInput(key, definition)}
                       </div>
                     </div>
@@ -259,14 +328,28 @@ export default function SettingsEditor({ settings, onSettingChange }: SettingsEd
         </div>
       ))}
 
-      <div className="border rounded-lg p-4" style={{ backgroundColor: 'var(--accent)', borderColor: 'var(--border)' }}>
-        <div className="flex items-start space-x-3">
-          <div className="text-xl" style={{ color: 'var(--button-primary)' }}>ℹ️</div>
+      <div
+        className='border rounded-lg p-4'
+        style={{
+          backgroundColor: "var(--accent)",
+          borderColor: "var(--border)",
+        }}
+      >
+        <div className='flex items-start space-x-3'>
+          <div className='text-xl' style={{ color: "var(--button-primary)" }}>
+            ℹ️
+          </div>
           <div>
-            <h4 className="font-medium" style={{ color: 'var(--foreground)' }}>Über diese Einstellungen</h4>
-            <p className="text-sm mt-1" style={{ color: 'var(--muted-foreground)' }}>
-              Alle Änderungen werden automatisch gespeichert und in Echtzeit auf dem Dashboard angewendet. 
-              Die Einstellungen werden sicher in Ihrer CouchDB-Datenbank gespeichert.
+            <h4 className='font-medium' style={{ color: "var(--foreground)" }}>
+              Über diese Einstellungen
+            </h4>
+            <p
+              className='text-sm mt-1'
+              style={{ color: "var(--muted-foreground)" }}
+            >
+              Alle Änderungen werden automatisch gespeichert und in Echtzeit auf
+              dem Dashboard angewendet. Die Einstellungen werden sicher in Ihrer
+              CouchDB-Datenbank gespeichert.
             </p>
           </div>
         </div>

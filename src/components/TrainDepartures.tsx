@@ -30,9 +30,11 @@ export default function TrainDepartures({
     try {
       !second && setLoading(true);
       const response = await fetch(
-        "https://v6.db.transport.rest/stops/8000294/departures?results=20&duration=60&bus=false&tram=false&subway=false&taxi=false&ferry=false&national=false&nationalExpress=false"
+        "https://v6.db.transport.rest/stops/8000294/departures?results=20&duration=120&bus=false&tram=false&subway=false&taxi=false&ferry=false&national=false&nationalExpress=false"
       );
 
+
+      console.log("Train departures response:", response);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
