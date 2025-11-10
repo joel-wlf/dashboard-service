@@ -38,9 +38,6 @@ export default function Home() {
 
   // Extract settings
   const showClock = settings.find((s) => s.key === "show_clock")?.value;
-  const showAffirmation = settings.find(
-    (s) => s.key === "show_affirmation"
-  )?.value;
   const showWeather = settings.find((s) => s.key === "show_weather")?.value;
   const zipCode = settings.find((s) => s.key === "zip_code")?.value;
   const zoomLevel = settings.find((s) => s.key === "zoom_level")?.value || 100;
@@ -50,20 +47,23 @@ export default function Home() {
   console.log(settings);
 
   return (
-      <div className="screensaver-container">
-
-      <main 
-        className='h-screen max-h-screen grid grid-cols-3 grid-rows-2'
-        style={{ 
+    <div className='screensaver-container'>
+      <main
+        className='h-screen max-h-screen grid grid-cols-6 grid-rows-2'
+        style={{
           transform: `scale(${zoomLevel / 100})`,
-          transformOrigin: 'top left',
+          transformOrigin: "top left",
           width: `${10000 / zoomLevel}%`,
-          height: `${10000 / zoomLevel}%`
+          height: `${10000 / zoomLevel}%`,
         }}
       >
-        <div className='col-span-3 flex flex-col'>
+        <div className='col-span-6 flex flex-col'>
           <div className='h-[10%]'>
-            <LessonProgressBar lessonData={lessonData} currentTime={time} showOvertimeAlarm={showOvertimeAlarm} />
+            <LessonProgressBar
+              lessonData={lessonData}
+              currentTime={time}
+              showOvertimeAlarm={showOvertimeAlarm}
+            />
           </div>
           <div className='h-[90%] border-y flex flex-col justify-center items-center'>
             {showClock && (
@@ -74,7 +74,7 @@ export default function Home() {
         <div className=''>
           {showWeather && zipCode && <WeatherWidget zipCode={zipCode} />}
         </div>
-        <div className='border-x p-4 overflow-hidden'>
+        <div className='border-x p-4 overflow-hidden col-span-2'>
           <TrainDepartures />
         </div>
         <div className=''></div>

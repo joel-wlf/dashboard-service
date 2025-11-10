@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { WebUntis } from 'webuntis';
+
 
 export async function GET() {
   const username = process.env.DB_USERNAME || "admin";

@@ -33,14 +33,6 @@ const SETTING_DEFINITIONS = {
     category: "Anzeige",
     icon: "🌤️"
   },
-  show_affirmation: {
-    label: "Bestätigungen anzeigen",
-    description: "Zeigt positive Nachrichten oder Bestätigungen an",
-    type: "boolean",
-    defaultValue: false,
-    category: "Anzeige", 
-    icon: "💝"
-  },
   zip_code: {
     label: "Postleitzahl",
     description: "Postleitzahl für die Wetteranzeige",

@@ -118,9 +118,6 @@ export default function LessonProgressBar({ lessonData, currentTime, showOvertim
             <p className='text-3xl text-red-500 font-semibold'>
               {currentPeriod.type === 'stunde' ? 'Stunde' : 'Pause'} zu Ende
             </p>
-            <div className='mt-6 text-xl text-gray-600'>
-              {currentPeriod.start} - {currentPeriod.end}
-            </div>
           </div>
         </div>
       )}

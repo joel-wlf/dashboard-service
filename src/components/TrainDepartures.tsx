@@ -96,7 +96,7 @@ export default function TrainDepartures({
       <div className='space-y-2 overflow-y-auto'>
         {departures.slice(0, 8).map((departure, index) => (
           <div key={index} className='bg-gray-100 rounded p-1 text-sm'>
-            <div className='flex font-mono text-xl justify-between items-start'>
+            <div className='flex font-mono text-lg justify-between items-start'>
               <div className="flex gap-2 items-center">
                 <p>{departure.line.name}</p> <IconArrowRight className="size-4 " />
                 <p>{departure.direction}</p>
