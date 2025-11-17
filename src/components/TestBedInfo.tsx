@@ -150,7 +150,7 @@ export default function TestBedInfo({ testBedData = [] }: TestBedInfoProps) {
         </div>
         
         {/* Server Cards */}
-        {serverIds.map(serverId => {
+        {serverIds.map(serverId => {  
           // For disabled testbeds, show empty cards
           const server = testbed.enabled ? testbed.servers.find(s => s.ort === serverId) : null;
           return <div key={serverId}>{renderServerCard(server, !server || !testbed.enabled)}</div>;

@@ -13,7 +13,7 @@ interface Setting {
 
 interface SettingsEditorProps {
   settings: Setting[];
-  onSettingChange: (key: string, value: any) => void;
+  onSave: (changedSettings: { key: string; value: any }[]) => void;
 }
 
 // Define all the settings that should exist with their defaults and metadata
@@ -91,24 +91,31 @@ const SETTING_DEFINITIONS = {
 
 export default function SettingsEditor({
   settings,
-  onSettingChange,
+  onSave,
 }: SettingsEditorProps) {
-  // Debounce timeout reference
-  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // Track pending changes that haven't been saved yet
+  const [pendingChanges, setPendingChanges] = useState<{ [key: string]: any }>({});
 
-  // Debounced onChange function
-  const debouncedOnSettingChange = useCallback(
-    (key: string, value: any) => {
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
-      }
+  // Handle local setting changes
+  const handleLocalChange = useCallback((key: string, value: any) => {
+    setPendingChanges(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  }, []);
 
-      debounceTimeoutRef.current = setTimeout(() => {
-        onSettingChange(key, value);
-      }, 300);
-    },
-    [onSettingChange]
-  );
+  // Handle save all changes
+  const handleSaveChanges = useCallback(() => {
+    const changedSettings = Object.entries(pendingChanges).map(([key, value]) => ({
+      key,
+      value
+    }));
+    onSave(changedSettings);
+    setPendingChanges({});
+  }, [pendingChanges, onSave]);
+
+  // Check if there are any pending changes
+  const hasChanges = Object.keys(pendingChanges).length > 0;
 
   // Group settings by category with custom order
   const allCategories = Array.from(
@@ -118,8 +125,14 @@ export default function SettingsEditor({
     (cat) => allCategories.includes(cat)
   );
 
-  // Get setting value or default
+  // Get setting value or default (including pending changes)
   const getSettingValue = (key: string) => {
+    // If there's a pending change, use that
+    if (key in pendingChanges) {
+      return pendingChanges[key];
+    }
+    
+    // Otherwise use the saved setting or default
     const setting = settings.find((s) => s.key === key);
     return setting
       ? setting.value
@@ -138,7 +151,7 @@ export default function SettingsEditor({
             <input
               type='checkbox'
               checked={value || false}
-              onChange={(e) => debouncedOnSettingChange(key, e.target.checked)}
+              onChange={(e) => handleLocalChange(key, e.target.checked)}
               className='h-5 w-5 rounded focus:ring-2'
               style={{
                 accentColor: "var(--button-primary)",
@@ -161,7 +174,7 @@ export default function SettingsEditor({
           <input
             type='text'
             value={value || ""}
-            onChange={(e) => debouncedOnSettingChange(key, e.target.value)}
+            onChange={(e) => handleLocalChange(key, e.target.value)}
             className='w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent'
             style={{
               backgroundColor: "var(--admin-input)",
@@ -182,7 +195,7 @@ export default function SettingsEditor({
               step={definition.step || 1}
               value={value || definition.defaultValue}
               onChange={(e) =>
-                debouncedOnSettingChange(key, parseFloat(e.target.value))
+                handleLocalChange(key, parseFloat(e.target.value))
               }
               className='w-full h-2 rounded-lg appearance-none cursor-pointer'
               style={{
@@ -223,7 +236,7 @@ export default function SettingsEditor({
         return (
           <LessonDataEditor
             value={value || []}
-            onChange={(newData) => debouncedOnSettingChange(key, newData)}
+            onChange={(newData) => handleLocalChange(key, newData)}
           />
         );
 
@@ -231,7 +244,7 @@ export default function SettingsEditor({
         return (
           <TestBedDataEditor
             value={value || []}
-            onChange={(newData) => debouncedOnSettingChange(key, newData)}
+            onChange={(newData) => handleLocalChange(key, newData)}
           />
         );
 
@@ -244,9 +257,9 @@ export default function SettingsEditor({
             onChange={(e) => {
               try {
                 const parsed = JSON.parse(e.target.value);
-                debouncedOnSettingChange(key, parsed);
+                handleLocalChange(key, parsed);
               } catch {
-                debouncedOnSettingChange(key, e.target.value);
+                handleLocalChange(key, e.target.value);
               }
             }}
             className='w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 font-mono text-sm'
@@ -262,8 +275,9 @@ export default function SettingsEditor({
   };
 
   return (
-    <div className='space-y-8'>
-      {categories.map((category) => (
+    <>
+      <div className='space-y-8'>
+        {categories.map((category) => (
         <div
           key={category}
           className='rounded-xl shadow-sm border overflow-hidden'
@@ -326,34 +340,68 @@ export default function SettingsEditor({
               ))}
           </div>
         </div>
-      ))}
+        ))}
 
-      <div
-        className='border rounded-lg p-4'
-        style={{
-          backgroundColor: "var(--accent)",
-          borderColor: "var(--border)",
-        }}
-      >
-        <div className='flex items-start space-x-3'>
-          <div className='text-xl' style={{ color: "var(--button-primary)" }}>
-            ℹ️
-          </div>
-          <div>
-            <h4 className='font-medium' style={{ color: "var(--foreground)" }}>
-              Über diese Einstellungen
-            </h4>
-            <p
-              className='text-sm mt-1'
-              style={{ color: "var(--muted-foreground)" }}
-            >
-              Alle Änderungen werden automatisch gespeichert und in Echtzeit auf
-              dem Dashboard angewendet. Die Einstellungen werden sicher in Ihrer
-              CouchDB-Datenbank gespeichert.
-            </p>
+        <div
+          className='border rounded-lg p-4'
+          style={{
+            backgroundColor: "var(--accent)",
+            borderColor: "var(--border)",
+          }}
+        >
+          <div className='flex items-start space-x-3'>
+            <div className='text-xl' style={{ color: "var(--button-primary)" }}>
+              ℹ️
+            </div>
+            <div>
+              <h4 className='font-medium' style={{ color: "var(--foreground)" }}>
+                Über diese Einstellungen
+              </h4>
+              <p
+                className='text-sm mt-1'
+                style={{ color: "var(--muted-foreground)" }}
+              >
+                Ändern Sie die Einstellungen und klicken Sie "Speichern" um sie zu übernehmen.
+                Die Einstellungen werden sicher in Ihrer CouchDB-Datenbank gespeichert.
+              </p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Fixed Save Button */}
+      {hasChanges && (
+        <div
+          className="fixed bottom-0 left-0 right-0 p-4 border-t shadow-lg z-50"
+          style={{
+            backgroundColor: "var(--admin-card)",
+            borderColor: "var(--admin-border)",
+          }}
+        >
+          <div className="max-w-4xl mx-auto flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="text-lg">💾</div>
+              <div>
+                <p className="font-medium" style={{ color: "var(--foreground)" }}>
+                  Ungespeicherte Änderungen
+                </p>
+                <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
+                  {Object.keys(pendingChanges).length} Einstellung{Object.keys(pendingChanges).length !== 1 ? 'en' : ''} geändert
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleSaveChanges}
+              className="px-6 py-3 rounded-lg font-medium text-white transition-colors"
+              style={{ backgroundColor: "var(--button-primary)" }}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--button-primary-hover)'}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'var(--button-primary)'}
+            >
+              Alle Änderungen speichern
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

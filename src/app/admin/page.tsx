@@ -101,47 +101,48 @@ export default function AdminPage() {
     }
   };
 
-  const updateSetting = async (key: string, value: any) => {
+
+  const handleSaveSettings = async (changedSettings: { key: string; value: any }[]) => {
     setLoading(true);
     setUpdateMessage("");
 
     try {
-      const response = await fetch("/api/updateSetting", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ key, value }),
-      });
+      // Save all changed settings
+      for (const { key, value } of changedSettings) {
+        const response = await fetch("/api/updateSetting", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ key, value }),
+        });
 
-      if (response.ok) {
-        setUpdateMessage(`Einstellung "${key}" erfolgreich aktualisiert`);
-        await loadSettings(); // Einstellungen neu laden
-        setTimeout(() => setUpdateMessage(""), 3000);
-      } else if (response.status === 401) {
-        // Session abgelaufen
-        setIsAuthenticated(false);
-      } else {
-        const error = await response.json();
-        setUpdateMessage(`Fehler beim Aktualisieren von "${key}": ${error.error}`);
+        if (!response.ok) {
+          if (response.status === 401) {
+            setIsAuthenticated(false);
+            return;
+          }
+          const error = await response.json();
+          throw new Error(`Fehler beim Speichern von "${key}": ${error.error}`);
+        }
       }
+
+      // Success message
+      setUpdateMessage(
+        changedSettings.length === 1
+          ? `Einstellung "${changedSettings[0].key}" erfolgreich gespeichert`
+          : `${changedSettings.length} Einstellungen erfolgreich gespeichert`
+      );
+      
+      // Reload settings to get fresh data
+      await loadSettings();
+      setTimeout(() => setUpdateMessage(""), 3000);
+      
     } catch (error) {
-      setUpdateMessage(`Fehler beim Aktualisieren von "${key}": ${error}`);
+      setUpdateMessage(`Fehler beim Speichern: ${error}`);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleSettingChange = (key: string, value: any) => {
-    // Lokalen Zustand sofort aktualisieren für bessere UX
-    setSettings(prev => 
-      prev.map(setting => 
-        setting.key === key ? { ...setting, value } : setting
-      )
-    );
-    
-    // Dann Datenbank aktualisieren
-    updateSetting(key, value);
   };
 
   // Anmeldeformular anzeigen wenn nicht authentifiziert
@@ -227,7 +228,7 @@ export default function AdminPage() {
         <div>
           <SettingsEditor 
             settings={settings} 
-            onSettingChange={handleSettingChange}
+            onSave={handleSaveSettings}
           />
         </div>
       </div>

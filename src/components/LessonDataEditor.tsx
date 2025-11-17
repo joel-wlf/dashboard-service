@@ -95,8 +95,7 @@ export default function LessonDataEditor({ value, onChange }: LessonDataEditorPr
                     style={{ 
                       backgroundColor: 'var(--admin-input)', 
                       borderColor: 'var(--admin-border)', 
-                      color: 'var(--foreground)',
-                      focusRingColor: 'var(--button-primary)'
+                      color: 'var(--foreground)'
                     }}
                   >
                     <option value="stunde">Unterricht</option>
@@ -115,8 +114,7 @@ export default function LessonDataEditor({ value, onChange }: LessonDataEditorPr
                     style={{ 
                       backgroundColor: 'var(--admin-input)', 
                       borderColor: 'var(--admin-border)', 
-                      color: 'var(--foreground)',
-                      focusRingColor: 'var(--button-primary)'
+                      color: 'var(--foreground)'
                     }}
                   />
                 </div>
@@ -132,8 +130,7 @@ export default function LessonDataEditor({ value, onChange }: LessonDataEditorPr
                     style={{ 
                       backgroundColor: 'var(--admin-input)', 
                       borderColor: 'var(--admin-border)', 
-                      color: 'var(--foreground)',
-                      focusRingColor: 'var(--button-primary)'
+                      color: 'var(--foreground)'
                     }}
                   />
                 </div>
