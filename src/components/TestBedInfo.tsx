@@ -23,6 +23,13 @@ export default function TestBedInfo({ testBedData = [] }: TestBedInfoProps) {
 
   // Convert old format to new format if needed
   const normalizeTestBedData = (): TestBedConfig[] => {
+    const defaultTestBeds = [
+      { testbedId: 1, name: "TestBed 1", enabled: false, servers: [] },
+      { testbedId: 2, name: "TestBed 2", enabled: false, servers: [] },
+      { testbedId: 3, name: "TestBed 3", enabled: false, servers: [] },
+      { testbedId: 4, name: "TestBed 4", enabled: false, servers: [] }
+    ];
+
     // Check if we have old format data (array of TestBedData)
     if (Array.isArray(testBedData) && testBedData.length > 0 && 'ort' in testBedData[0]) {
       const oldData = testBedData as TestBedData[];
@@ -38,38 +45,70 @@ export default function TestBedInfo({ testBedData = [] }: TestBedInfoProps) {
           name: "TestBed 2", 
           enabled: true,
           servers: oldData.filter(item => item.ort.startsWith('2.'))
+        },
+        {
+          testbedId: 3,
+          name: "TestBed 3",
+          enabled: false,
+          servers: []
+        },
+        {
+          testbedId: 4,
+          name: "TestBed 4",
+          enabled: false,
+          servers: []
         }
       ];
     }
 
-    // Return new format data
-    return testBedData as TestBedConfig[];
+    // If we have new format data, ensure all 4 testbeds exist
+    if (Array.isArray(testBedData) && testBedData.length > 0 && 'testbedId' in testBedData[0]) {
+      const existingData = testBedData as TestBedConfig[];
+      const result = [...defaultTestBeds];
+      
+      // Merge existing data with defaults
+      existingData.forEach(testbed => {
+        const index = result.findIndex(tb => tb.testbedId === testbed.testbedId);
+        if (index >= 0) {
+          result[index] = testbed;
+        }
+      });
+      
+      return result;
+    }
+
+    // Return defaults if no data
+    return defaultTestBeds;
   };
 
   const testBeds = normalizeTestBedData();
   const enabledTestBeds = testBeds.filter(tb => tb.enabled);
+  const disabledTestBeds = testBeds.filter(tb => !tb.enabled);
   
-  // Auto-switch views when more than 2 testbeds are enabled
+  // Sort testbeds: enabled first, then disabled
+  const sortedTestBeds = [...enabledTestBeds, ...disabledTestBeds];
+  
+  // Auto-switch views when more than 2 testbeds are ENABLED
   useEffect(() => {
     if (enabledTestBeds.length > 2) {
+      const totalViews = Math.ceil(sortedTestBeds.length / 2);
       const interval = setInterval(() => {
-        setCurrentView(prev => (prev + 1) % Math.ceil(enabledTestBeds.length / 2));
+        setCurrentView(prev => (prev + 1) % totalViews);
       }, 3000);
 
       return () => clearInterval(interval);
     } else {
-      setCurrentView(0);
+      setTimeout(() => {
+        setCurrentView(0);
+      }, 0);
     }
-  }, [enabledTestBeds.length]);
+  }, [enabledTestBeds.length, sortedTestBeds.length]);
 
-  // Get testbeds to display in current view
+  // Get testbeds to display in current view (always show 2, but prioritize enabled ones)
   const getTestBedsForCurrentView = (): TestBedConfig[] => {
-    if (enabledTestBeds.length <= 2) {
-      return enabledTestBeds;
-    }
-
+    const totalViews = Math.ceil(sortedTestBeds.length / 2);
     const startIndex = currentView * 2;
-    return enabledTestBeds.slice(startIndex, startIndex + 2);
+    return sortedTestBeds.slice(startIndex, startIndex + 2);
   };
 
   const currentTestBeds = getTestBedsForCurrentView();
@@ -102,40 +141,35 @@ export default function TestBedInfo({ testBedData = [] }: TestBedInfoProps) {
     const serverIds = [1, 2, 3, 4].map(num => `${testbed.testbedId}.${num}`);
     
     return (
-      <div key={testbed.testbedId} className='grid'>
+      <div key={testbed.testbedId} className={`grid h-full ${!testbed.enabled ? 'opacity-60' : ''}`}>
         {/* TestBed Header */}
-        <div className="text-center p-2 font-bold text-lg" style={{ color: "var(--foreground)" }}>
-          {testbed.name}
+        <div className="text-center p-2 h-3 font-bold text-lg" style={{ 
+          color: testbed.enabled ? "var(--foreground)" : "var(--muted-foreground)" 
+        }}>
+          {testbed.name} {!testbed.enabled && '(Deaktiviert)'}
         </div>
         
         {/* Server Cards */}
         {serverIds.map(serverId => {
-          const server = testbed.servers.find(s => s.ort === serverId);
-          return <div key={serverId}>{renderServerCard(server, !server)}</div>;
+          // For disabled testbeds, show empty cards
+          const server = testbed.enabled ? testbed.servers.find(s => s.ort === serverId) : null;
+          return <div key={serverId}>{renderServerCard(server, !server || !testbed.enabled)}</div>;
         })}
       </div>
     );
   };
 
-  // Don't render if no testbeds are enabled
-  if (enabledTestBeds.length === 0) {
-    return (
-      <div className='col-span-3 flex justify-center items-center p-8'>
-        <div className='text-center' style={{ color: "var(--muted-foreground)" }}>
-          <div className='text-4xl mb-4'>🖥️</div>
-          <div className='text-lg'>Keine TestBeds aktiviert</div>
-        </div>
-      </div>
-    );
-  }
+  // Always show testbeds, but with different styling for enabled/disabled
+  const totalViews = Math.ceil(sortedTestBeds.length / 2);
+  const shouldShowViewIndicator = enabledTestBeds.length > 2;
 
   return (
     <div className='col-span-3 w-full p-2'>
-      {/* View indicator when switching */}
-      {enabledTestBeds.length > 2 && (
+      {/* View indicator only when more than 2 testbeds are ENABLED (switching active) */}
+      {shouldShowViewIndicator && (
         <div className="flex justify-center mb-2">
           <div className="flex space-x-2">
-            {Array.from({ length: Math.ceil(enabledTestBeds.length / 2) }).map((_, index) => (
+            {Array.from({ length: totalViews }).map((_, index) => (
               <div
                 key={index}
                 className={`w-3 h-3 rounded-full ${
@@ -147,7 +181,18 @@ export default function TestBedInfo({ testBedData = [] }: TestBedInfoProps) {
         </div>
       )}
 
-      <div className={`grid w-full ${currentTestBeds.length === 1 ? 'grid-cols-1 justify-center' : 'grid-cols-2'}`}>
+      {/* Show status when no testbeds are enabled */}
+      {enabledTestBeds.length === 0 && (
+        <div className="text-center mb-4 p-4 rounded-lg" style={{ 
+          backgroundColor: "var(--muted)", 
+          color: "var(--muted-foreground)" 
+        }}>
+          <div className='text-2xl mb-2'>⚠️</div>
+          <div className='text-lg'>Alle TestBeds sind deaktiviert</div>
+        </div>
+      )}
+
+      <div className={`grid h-full w-full ${currentTestBeds.length === 1 ? 'grid-cols-1 justify-center' : 'grid-cols-2'}`}>
         {currentTestBeds.map(testbed => renderTestBed(testbed))}
       </div>
     </div>

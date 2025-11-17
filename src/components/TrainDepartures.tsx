@@ -9,6 +9,7 @@ interface TrainData {
   };
   when: string;
   delay?: number;
+  provenance: string;
   line: {
     name: string;
   };
@@ -34,7 +35,7 @@ export default function TrainDepartures({
       // Check current time to determine if we should show arrivals or departures
       const now = new Date();
       const currentHour = now.getHours();
-      const showArrivals = currentHour < 18;
+      const showArrivals = currentHour < 11;
       setIsShowingArrivals(showArrivals);
 
       // Fetch arrivals or departures based on time
@@ -97,7 +98,7 @@ export default function TrainDepartures({
   if (error) {
     return (
       <div className={`${className} flex flex-col items-center justify-center`}>
-        <h2 className='text-xl font-bold mb-4 text-white'>
+        <h2 className='text-xl font-bold font-mono mb-4 text-white'>
           Osnabrück HBF {isShowingArrivals ? "Ankünfte" : "Abfahrten"}
         </h2>
         <p className='text-red-400'>{error}</p>
@@ -146,7 +147,7 @@ export default function TrainDepartures({
                     isShowingArrivals ? "text-green-200" : "text-blue-200"
                   }`}
                 >
-                  {train.direction}
+                  {isShowingArrivals ? train.provenance : train.direction}
                 </p>
               </div>
               <div className='text-right ml-4'>

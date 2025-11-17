@@ -180,9 +180,6 @@ export default function TestBedDataEditor({
               color: "var(--foreground)",
             }}
           />
-          <span className="text-sm" style={{ color: "var(--muted-foreground)" }}>
-            {testbed.enabled ? "Aktiviert" : "Deaktiviert"}
-          </span>
         </div>
 
         {/* Server Slots */}
