@@ -8,7 +8,7 @@ import TestBedInfo from "@/components/TestBedInfo";
 
 export default function Home() {
   const [time, setTime] = useState(new Date());
-  const [settings, setSettings] = useState<any[]>([]);
+  const [settings, setSettings] = useState([]);
 
   // Fetch settings from your API route
   const fetchSettings = async () => {
@@ -29,6 +29,7 @@ export default function Home() {
     }, 1000);
 
     // Initial settings fetch
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchSettings();
 
     // Cleanup

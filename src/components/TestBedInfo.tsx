@@ -106,7 +106,6 @@ export default function TestBedInfo({ testBedData = [] }: TestBedInfoProps) {
 
   // Get testbeds to display in current view (always show 2, but prioritize enabled ones)
   const getTestBedsForCurrentView = (): TestBedConfig[] => {
-    const totalViews = Math.ceil(sortedTestBeds.length / 2);
     const startIndex = currentView * 2;
     return sortedTestBeds.slice(startIndex, startIndex + 2);
   };

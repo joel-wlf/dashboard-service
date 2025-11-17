@@ -8,12 +8,13 @@ export async function POST(req: Request) {
   }
 
   const username = process.env.DB_USERNAME || "admin";
-  const password = process.env.DB_PASSWORD || "password";
+  const password = process.env.DB_PASSWORD || "admin_password";
+  const dbUrl = process.env.DB_URL || "http://localhost:5984/";
   const auth =
     "Basic " + Buffer.from(`${username}:${password}`).toString("base64");
 
   // 1. Find the document with this key
-  const findRes = await fetch(`http://localhost:5984/dashboardconfig/_find`, {
+  const findRes = await fetch(`${dbUrl}dashboardconfig/_find`, {
     method: "POST",
     headers: {
       Authorization: auth,
@@ -46,7 +47,7 @@ export async function POST(req: Request) {
   const updatedDoc = { ...doc, value };
 
   const updateRes = await fetch(
-    `http://localhost:5984/dashboardconfig/${doc._id}`,
+    `${dbUrl}dashboardconfig/${doc._id}`,
     {
       method: "PUT",
       headers: {
