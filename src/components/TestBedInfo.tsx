@@ -1,21 +1,78 @@
+"use client";
+
+import { useState, useEffect } from "react";
+
 interface TestBedData {
   ort: string;
   gruppe: string;
 }
 
+interface TestBedConfig {
+  testbedId: number;
+  name: string;
+  enabled: boolean;
+  servers: TestBedData[];
+}
+
 interface TestBedInfoProps {
-  testBedData?: TestBedData[];
+  testBedData?: TestBedConfig[] | TestBedData[];
 }
 
 export default function TestBedInfo({ testBedData = [] }: TestBedInfoProps) {
-  // Sort and group servers by room (1.x and 2.x)
-  const room1Servers = testBedData
-    .filter(item => item.ort.startsWith('1.'))
-    .sort((a, b) => a.ort.localeCompare(b.ort));
+  const [currentView, setCurrentView] = useState(0);
+
+  // Convert old format to new format if needed
+  const normalizeTestBedData = (): TestBedConfig[] => {
+    // Check if we have old format data (array of TestBedData)
+    if (Array.isArray(testBedData) && testBedData.length > 0 && 'ort' in testBedData[0]) {
+      const oldData = testBedData as TestBedData[];
+      return [
+        {
+          testbedId: 1,
+          name: "TestBed 1",
+          enabled: true,
+          servers: oldData.filter(item => item.ort.startsWith('1.'))
+        },
+        {
+          testbedId: 2,
+          name: "TestBed 2", 
+          enabled: true,
+          servers: oldData.filter(item => item.ort.startsWith('2.'))
+        }
+      ];
+    }
+
+    // Return new format data
+    return testBedData as TestBedConfig[];
+  };
+
+  const testBeds = normalizeTestBedData();
+  const enabledTestBeds = testBeds.filter(tb => tb.enabled);
   
-  const room2Servers = testBedData
-    .filter(item => item.ort.startsWith('2.'))
-    .sort((a, b) => a.ort.localeCompare(b.ort));
+  // Auto-switch views when more than 2 testbeds are enabled
+  useEffect(() => {
+    if (enabledTestBeds.length > 2) {
+      const interval = setInterval(() => {
+        setCurrentView(prev => (prev + 1) % Math.ceil(enabledTestBeds.length / 2));
+      }, 3000);
+
+      return () => clearInterval(interval);
+    } else {
+      setCurrentView(0);
+    }
+  }, [enabledTestBeds.length]);
+
+  // Get testbeds to display in current view
+  const getTestBedsForCurrentView = (): TestBedConfig[] => {
+    if (enabledTestBeds.length <= 2) {
+      return enabledTestBeds;
+    }
+
+    const startIndex = currentView * 2;
+    return enabledTestBeds.slice(startIndex, startIndex + 2);
+  };
+
+  const currentTestBeds = getTestBedsForCurrentView();
 
   const renderServerCard = (item: TestBedData | null, isEmpty = false) => (
     <div className='h-full w-full p-1'>
@@ -41,22 +98,57 @@ export default function TestBedInfo({ testBedData = [] }: TestBedInfoProps) {
     </div>
   );
 
-  return (
-    <div className='grid grid-cols-2 w-full p-2 col-span-3'>
-      {/* Room 1 servers (1.1 - 1.4) */}
-      <div className='grid'>
-        {[1, 2, 3, 4].map(num => {
-          const server = room1Servers.find(s => s.ort === `1.${num}`);
-          return <div key={`1.${num}`}>{renderServerCard(server, !server)}</div>;
+  const renderTestBed = (testbed: TestBedConfig) => {
+    const serverIds = [1, 2, 3, 4].map(num => `${testbed.testbedId}.${num}`);
+    
+    return (
+      <div key={testbed.testbedId} className='grid'>
+        {/* TestBed Header */}
+        <div className="text-center p-2 font-bold text-lg" style={{ color: "var(--foreground)" }}>
+          {testbed.name}
+        </div>
+        
+        {/* Server Cards */}
+        {serverIds.map(serverId => {
+          const server = testbed.servers.find(s => s.ort === serverId);
+          return <div key={serverId}>{renderServerCard(server, !server)}</div>;
         })}
       </div>
+    );
+  };
 
-      {/* Room 2 servers (2.1 - 2.4) */}
-      <div className='grid'>
-        {[1, 2, 3, 4].map(num => {
-          const server = room2Servers.find(s => s.ort === `2.${num}`);
-          return <div key={`2.${num}`}>{renderServerCard(server, !server)}</div>;
-        })}
+  // Don't render if no testbeds are enabled
+  if (enabledTestBeds.length === 0) {
+    return (
+      <div className='col-span-3 flex justify-center items-center p-8'>
+        <div className='text-center' style={{ color: "var(--muted-foreground)" }}>
+          <div className='text-4xl mb-4'>🖥️</div>
+          <div className='text-lg'>Keine TestBeds aktiviert</div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className='col-span-3 w-full p-2'>
+      {/* View indicator when switching */}
+      {enabledTestBeds.length > 2 && (
+        <div className="flex justify-center mb-2">
+          <div className="flex space-x-2">
+            {Array.from({ length: Math.ceil(enabledTestBeds.length / 2) }).map((_, index) => (
+              <div
+                key={index}
+                className={`w-3 h-3 rounded-full ${
+                  index === currentView ? 'bg-blue-500' : 'bg-gray-400'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className={`grid w-full ${currentTestBeds.length === 1 ? 'grid-cols-1 justify-center' : 'grid-cols-2'}`}>
+        {currentTestBeds.map(testbed => renderTestBed(testbed))}
       </div>
     </div>
   );

@@ -27,8 +27,8 @@ const SETTING_DEFINITIONS = {
     icon: "🖥️",
   },
   testbed_info: {
-    label: "TestBed Server-Daten",
-    description: "Konfiguration der TestBed Server (Raum und Gruppen)",
+    label: "TestBed Konfiguration",
+    description: "Konfiguration der 4 TestBeds mit individueller Aktivierung/Deaktivierung",
     type: "testbed_data",
     defaultValue: [],
     category: "TestBed",
