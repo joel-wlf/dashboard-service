@@ -115,20 +115,22 @@ export default function TestBedInfo({ testBedData = [] }: TestBedInfoProps) {
   const renderServerCard = (item: TestBedData | null, isEmpty = false) => (
     <div className='h-full w-full p-1'>
       <div
-        className={`bg-neutral-700 font-mono px-2 w-full h-full rounded flex flex-col justify-center items-center text-center ${isEmpty ? 'opacity-50' : ''}`}
+        className={`bg-neutral-700 font-mono px-2 w-full h-full rounded flex flex-col justify-center items-center text-center ${
+          isEmpty ? "opacity-50" : ""
+        }`}
         style={{ backgroundColor: "var(--train-card)" }}
       >
         {item ? (
-          <div className="grid grid-cols-5 w-full h-full">
-            <div className="font-bold text-2xl flex justify-center items-center">
-                {item.ort}
+          <div className='grid grid-cols-5 w-full h-full'>
+            <div className='font-bold text-2xl flex justify-center items-center'>
+              {item.ort}
             </div>
-            <div className="col-span-4 text-lg flex flex-col justify-center items-start p-2">
-                {item.gruppe}
+            <div className='col-span-4 text-lg flex flex-col justify-center items-start p-2'>
+              {item.gruppe}
             </div>
           </div>
         ) : (
-          <div className='text-sm text-gray-500'>
+          <div className='text-gray-500 w-full h-full p-auto flex items-center justify-center'>
             Nicht belegt
           </div>
         )}
@@ -142,44 +144,39 @@ export default function TestBedInfo({ testBedData = [] }: TestBedInfoProps) {
     return (
       <div key={testbed.testbedId} className={`grid h-full ${!testbed.enabled ? 'opacity-60' : ''}`}>
         {/* TestBed Header */}
-        <div className="text-center p-2 h-3 font-bold text-lg" style={{ 
+        <div className="text-center p-1 h-1 font-bold text-lg" style={{ 
           color: testbed.enabled ? "var(--foreground)" : "var(--muted-foreground)" 
         }}>
           {testbed.name} {!testbed.enabled && '(Deaktiviert)'}
         </div>
         
-        {/* Server Cards */}
-        {serverIds.map(serverId => {  
-          // For disabled testbeds, show empty cards
-          const server = testbed.enabled ? testbed.servers.find(s => s.ort === serverId) : null;
-          return <div key={serverId}>{renderServerCard(server, !server || !testbed.enabled)}</div>;
-        })}
+        {/* Content */}
+        {testbed.enabled ? (
+          // For enabled testbeds, show individual server cards
+          serverIds.map(serverId => {  
+            const server = testbed.servers.find(s => s.ort === serverId);
+            return <div key={serverId}>{renderServerCard(server, !server)}</div>;
+          })
+        ) : (
+          // For disabled testbeds, show one big "Deaktiviert" card
+          <div className='h-full w-full p-1'>
+            <div
+              className="row-span-4 font-mono px-2 w-full h-full rounded flex flex-col justify-center items-center text-center opacity-50"
+            >
+              <div className='text-gray-500 text-xl font-bold'>
+                Deaktiviert
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   };
 
   // Always show testbeds, but with different styling for enabled/disabled
-  const totalViews = Math.ceil(sortedTestBeds.length / 2);
-  const shouldShowViewIndicator = enabledTestBeds.length > 2;
 
   return (
     <div className='col-span-3 w-full p-2'>
-      {/* View indicator only when more than 2 testbeds are ENABLED (switching active) */}
-      {shouldShowViewIndicator && (
-        <div className="flex justify-center mb-2">
-          <div className="flex space-x-2">
-            {Array.from({ length: totalViews }).map((_, index) => (
-              <div
-                key={index}
-                className={`w-3 h-3 rounded-full ${
-                  index === currentView ? 'bg-blue-500' : 'bg-gray-400'
-                }`}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Show status when no testbeds are enabled */}
       {enabledTestBeds.length === 0 && (
         <div className="text-center mb-4 p-4 rounded-lg" style={{ 

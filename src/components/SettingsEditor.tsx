@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -361,7 +362,7 @@ export default function SettingsEditor({
                 className='text-sm mt-1'
                 style={{ color: "var(--muted-foreground)" }}
               >
-                Ändern Sie die Einstellungen und klicken Sie "Speichern" um sie zu übernehmen.
+                Ändern Sie die Einstellungen und klicken Sie &quot;Speichern&quot; um sie zu übernehmen.
                 Die Einstellungen werden sicher in Ihrer CouchDB-Datenbank gespeichert.
               </p>
             </div>
